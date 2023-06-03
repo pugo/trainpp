@@ -2,7 +2,7 @@
 #include <boost/program_options.hpp>
 #include <boost/log/trivial.hpp>
 
-#include "z21.h"
+#include "z21/z21.h"
 
 
 using namespace boost;

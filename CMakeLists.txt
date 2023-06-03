@@ -6,6 +6,6 @@ project(trainpp)
 find_package(Boost 1.74 COMPONENTS program_options log REQUIRED)
 
 
-add_executable(trainpp main.cpp z21.cpp z21_dataset.cpp)
+add_executable(trainpp main.cpp z21/z21.cpp z21/z21_dataset.cpp z21/lan_x_dataset.cpp)
 
 target_link_libraries (trainpp ${Boost_LIBRARIES} )

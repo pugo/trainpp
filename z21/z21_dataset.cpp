@@ -15,20 +15,18 @@ std::vector<uint8_t> Z21_DataSet::pack()
     std::vector<uint8_t> data = pack_data();
     uint16_t size = header_size + data.size();
 
+    // Pack size
     result.insert(result.end(), size & 0xff);
     result.insert(result.end(), (size >> 8) & 0xff);
 
-    result.insert(result.end(), id & 0xff);
-    result.insert(result.end(), (id >> 8) & 0xff);
+    // Pack ID
+    result.insert(result.end(), m_id & 0xff);
+    result.insert(result.end(), (m_id >> 8) & 0xff);
 
+    // Add data
     result.insert(result.end(), data.begin(), data.end());
 
     return result;
-}
-
-
-void Z21_DataSet::unpack(std::vector<uint8_t>& data)
-{
 }
 
 
@@ -79,14 +77,20 @@ void LanGetHWInfo::unpack(std::vector<uint8_t> &data)
         }
 
         fw_version = std::accumulate(result.begin() + 1, result.end(), result[0],
-                                        [](std::string x, std::string y) { return x + '.' + y; });
+                                        [](const std::string& a, const std::string& b) { return a + '.' + b; });
     }
 }
 
+void LanGetCode::unpack(std::vector<uint8_t> &data)
+{
+    BOOST_LOG_TRIVIAL(debug) << "LanGetCode::unpack(): " << PRINT_HEX(data);
+    if (data.size() == 1) {
+        code = data[0];
+    }
+}
 
 void LanSystemstateDatachanged::unpack(std::vector<uint8_t> &data)
 {
-    BOOST_LOG_TRIVIAL(debug) << "LanSystemstateDatachanged::unpack(): " << PRINT_HEX(data);
     if (data.size() == 16) {
         main_current = static_cast<int16_t>((data[1] << 8) + data[0]);
         prog_current = static_cast<int16_t>((data[3] << 8) + data[2]);
@@ -99,5 +103,10 @@ void LanSystemstateDatachanged::unpack(std::vector<uint8_t> &data)
         central_state = data[12];
         central_state_ex = data[13];
         capabilities = data[15];
+
+        emergency_stop = central_state & 0x01;
+        track_voltage_off = central_state & 0x02;
+        short_cirtcuit = central_state & 0x04;
+        programming_mode = central_state & 0x20;
     }
 }
