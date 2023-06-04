@@ -44,6 +44,44 @@ enum BroadcastFlags
 };
 
 
+// LAN_GET_SERIAL_NUMBER (0x10)
+class LanGetSerialNumber : public Z21_DataSet
+{
+public:
+    LanGetSerialNumber() { m_id = 0x10; }
+
+    virtual void unpack(std::vector<uint8_t>& data);
+
+    uint32_t serial_number;
+};
+
+
+// LAN_GET_CODE (0x18)
+class LanGetCode : public Z21_DataSet
+{
+public:
+    LanGetCode() { m_id = 0x18; }
+
+    virtual void unpack(std::vector<uint8_t>& data);
+
+    uint8_t code{0};
+};
+
+
+// LAN_GET_HWINFO (0x1a)
+class LanGetHWInfo : public Z21_DataSet
+{
+public:
+    LanGetHWInfo() { m_id = 0x1a; }
+
+    virtual void unpack(std::vector<uint8_t>& data);
+
+    uint32_t hw_type;
+    std::string fw_version;
+};
+
+
+// LAN_SET_BROADCASTFLAGS (0x50)
 class LanSetBroadcastFlags : public Z21_DataSet
 {
 public:
@@ -57,40 +95,7 @@ private:
 };
 
 
-class LanGetSerialNumber : public Z21_DataSet
-{
-public:
-    LanGetSerialNumber() { m_id = 0x10; }
-
-    virtual void unpack(std::vector<uint8_t>& data);
-
-    uint32_t serial_number;
-};
-
-
-class LanGetHWInfo : public Z21_DataSet
-{
-public:
-    LanGetHWInfo() { m_id = 0x1a; }
-
-    virtual void unpack(std::vector<uint8_t>& data);
-
-    uint32_t hw_type;
-    std::string fw_version;
-};
-
-
-class LanGetCode : public Z21_DataSet
-{
-public:
-    LanGetCode() { m_id = 0x18; }
-
-    virtual void unpack(std::vector<uint8_t>& data);
-
-    uint8_t code{0};
-};
-
-
+// LAN_GET_BROADCASTFLAGS (0x51)
 class LanGetBroadcastFlags : public Z21_DataSet
 {
 public:
@@ -102,6 +107,66 @@ private:
 };
 
 
+enum class Locomodes : uint8_t {
+    UNKNOWN = 255,
+    DCC = 0,
+    MM = 1
+};
+
+
+// LAN_GET_LOCOMODE (0x60)
+class LanGetLocomode : public Z21_DataSet
+{
+public:
+    LanGetLocomode(uint16_t address=0) : address(address)
+    { m_id = 0x60; }
+
+    virtual void unpack(std::vector<uint8_t>& data);
+
+    Locomodes mode{Locomodes::UNKNOWN};
+    uint16_t address;
+
+protected:
+    virtual std::vector<uint8_t> pack_data();
+
+};
+
+
+// LAN_SET_LOCOMODE (0x61)
+class LanSetLocomode : public Z21_DataSet
+{
+public:
+    LanSetLocomode(uint16_t address, Locomodes mode) :
+            m_address(address), m_mode(mode)
+    { m_id = 0x61; }
+
+private:
+    virtual std::vector<uint8_t> pack_data();
+
+    uint16_t m_address;
+    Locomodes m_mode;
+};
+
+
+// LAN_GET_TURNOUTMODE (0x70)
+class LanGetTurnoutmode : public LanGetLocomode
+{
+public:
+    LanGetTurnoutmode(uint16_t address=0) : LanGetLocomode(address)
+    { m_id = 0x70; }
+};
+
+
+// LAN_SET_TURNOUTMODE (0x71)
+class LanSetTurnoutmode : public LanSetLocomode
+{
+public:
+    LanSetTurnoutmode(uint16_t address, Locomodes mode) : LanSetLocomode(address, mode)
+    { m_id = 0x71; }
+};
+
+
+// LAN_SYSTEMSTATE_DATACHANGED (0x84)
 class LanSystemstateDatachanged : public Z21_DataSet
 {
 public:
@@ -128,6 +193,7 @@ public:
 };
 
 
+// LAN_SYSTEMSTATE_GETDATA (0x85)
 class LanSystemstateGetData : public Z21_DataSet
 {
 public:

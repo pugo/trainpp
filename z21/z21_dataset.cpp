@@ -30,24 +30,7 @@ std::vector<uint8_t> Z21_DataSet::pack()
 }
 
 
-std::vector<uint8_t> LanSetBroadcastFlags::pack_data()
-{
-    std::vector<uint8_t> result;
-    result.insert(result.end(), m_flags & 0xff);
-    result.insert(result.end(), (m_flags >> 8) & 0xff);
-    result.insert(result.end(), (m_flags >> 16) & 0xff);
-    result.insert(result.end(), (m_flags >> 24) & 0xff);
-    BOOST_LOG_TRIVIAL(debug) << "LanSetBroadcastFlags::pack_data(): " << PRINT_HEX(result);
-    return result;
-}
-
-
-void LanGetBroadcastFlags::unpack(std::vector<uint8_t> &data)
-{
-    BOOST_LOG_TRIVIAL(debug) << "LanGetBroadcastFlags::unpack(): " << PRINT_HEX(data);
-}
-
-
+// LAN_GET_SERIAL_NUMBER (0x10)
 void LanGetSerialNumber::unpack(std::vector<uint8_t> &data)
 {
     BOOST_LOG_TRIVIAL(debug) << "LanGetSerialNumber::unpack(): " << PRINT_HEX(data);
@@ -57,6 +40,17 @@ void LanGetSerialNumber::unpack(std::vector<uint8_t> &data)
 }
 
 
+// LAN_GET_CODE (0x18)
+void LanGetCode::unpack(std::vector<uint8_t> &data)
+{
+    BOOST_LOG_TRIVIAL(debug) << "LanGetCode::unpack(): " << PRINT_HEX(data);
+    if (data.size() == 1) {
+        code = data[0];
+    }
+}
+
+
+// LAN_GET_HWINFO (0x1a)
 void LanGetHWInfo::unpack(std::vector<uint8_t> &data)
 {
     BOOST_LOG_TRIVIAL(debug) << "LanGetHWInfo::unpack(): " << PRINT_HEX(data);
@@ -81,14 +75,58 @@ void LanGetHWInfo::unpack(std::vector<uint8_t> &data)
     }
 }
 
-void LanGetCode::unpack(std::vector<uint8_t> &data)
+
+// LAN_SET_BROADCASTFLAGS (0x50)
+std::vector<uint8_t> LanSetBroadcastFlags::pack_data()
 {
-    BOOST_LOG_TRIVIAL(debug) << "LanGetCode::unpack(): " << PRINT_HEX(data);
-    if (data.size() == 1) {
-        code = data[0];
-    }
+    std::vector<uint8_t> result;
+    result.insert(result.end(), m_flags & 0xff);
+    result.insert(result.end(), (m_flags >> 8) & 0xff);
+    result.insert(result.end(), (m_flags >> 16) & 0xff);
+    result.insert(result.end(), (m_flags >> 24) & 0xff);
+    BOOST_LOG_TRIVIAL(debug) << "LanSetBroadcastFlags::pack_data(): " << PRINT_HEX(result);
+    return result;
 }
 
+
+// LAN_GET_BROADCASTFLAGS (0x51)
+void LanGetBroadcastFlags::unpack(std::vector<uint8_t> &data)
+{
+    BOOST_LOG_TRIVIAL(debug) << "LanGetBroadcastFlags::unpack(): " << PRINT_HEX(data);
+}
+
+
+// LAN_GET_LOCOMODE (0x60)
+std::vector<uint8_t> LanGetLocomode::pack_data()
+{
+    std::vector<uint8_t> result;
+    // Loco address should be big endian according to spec.
+    result.insert(result.end(), (address >> 8) & 0xff);
+    result.insert(result.end(), address & 0xff);
+    return result;
+}
+
+void LanGetLocomode::unpack(std::vector<uint8_t> &data)
+{
+    address = (data[0] << 8) + data[1];
+    mode = static_cast<Locomodes>(data[2]);
+}
+
+
+// LAN_SET_LOCOMODE (0x61)
+std::vector<uint8_t> LanSetLocomode::pack_data()
+{
+    std::vector<uint8_t> result;
+    // Loco address should be big endian according to spec.
+    result.insert(result.end(), (m_address >> 8) & 0xff);
+    result.insert(result.end(), m_address & 0xff);
+    result.insert(result.end(), static_cast<uint8_t>(m_mode));
+    BOOST_LOG_TRIVIAL(debug) << "LanSetLocomode::pack_data(): " << PRINT_HEX(result);
+    return result;
+}
+
+
+// LAN_SYSTEMSTATE_DATACHANGED (0x84)
 void LanSystemstateDatachanged::unpack(std::vector<uint8_t> &data)
 {
     if (data.size() == 16) {

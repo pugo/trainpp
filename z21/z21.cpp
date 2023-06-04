@@ -24,6 +24,8 @@ Z21::Z21() :
     command_handlers[0x1a] = new LanGetHWInfo();
     command_handlers[0x40] = new LanX();
     command_handlers[0x51] = new LanGetBroadcastFlags();
+    command_handlers[0x60] = new LanGetLocomode();
+    command_handlers[0x70] = new LanGetTurnoutmode();
     command_handlers[0x84] = new LanSystemstateDatachanged();
 }
 
@@ -119,6 +121,8 @@ void Z21::handle_receive(const boost::system::error_code& error, std::size_t byt
     }
     else if (!sent_lan_get_code) {
         socket.send_to(boost::asio::buffer(LanGetCode().pack()), receiver_endpoint);
+        socket.send_to(boost::asio::buffer(LanGetLocomode(0x0001).pack()), receiver_endpoint);
+        socket.send_to(boost::asio::buffer(LanGetTurnoutmode(0x0001).pack()), receiver_endpoint);
         sent_lan_get_code = true;
     }
 
@@ -206,6 +210,14 @@ void Z21::handle_dataset(uint16_t size, uint16_t id, std::vector<uint8_t>& data)
                     }
                 }
             }   break;
+            case 0x60: {
+                LanGetLocomode* lm = static_cast<LanGetLocomode*>(dataset);
+                BOOST_LOG_TRIVIAL(debug) << " ---> LAN_GET_LOCOMODE: " << std::hex << (int)lm->address << " = " << (int)static_cast<uint8_t>(lm->mode);
+            } break;
+            case 0x70: {
+                LanGetTurnoutmode* lm = static_cast<LanGetTurnoutmode*>(dataset);
+                BOOST_LOG_TRIVIAL(debug) << " ---> LAN_GET_TURNOUTMODE: " << std::hex << (int)lm->address << " = " << (int)static_cast<uint8_t>(lm->mode);
+            } break;
             case 0x84: {
                 LanSystemstateDatachanged* ss = static_cast<LanSystemstateDatachanged*>(dataset);
                 m_main_current = ss->main_current;
