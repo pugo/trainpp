@@ -64,11 +64,98 @@ public:
         std::vector<uint8_t> result;
         return result;
     }
+
     virtual void unpack(std::vector<uint8_t>& data) {}
 
     const LanXCommands id;
+
+protected:
+    void append_checksum(std::vector<uint8_t>& data);
 };
 
+
+// ---- Client to Z21
+
+class LanX_GetLocoInfo : public LanX_Packet
+{
+public:
+    LanX_GetLocoInfo(uint16_t address) :
+        LanX_Packet(LanXCommands::LAN_X_GET_LOCO_INFO),
+        m_address(address)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint16_t m_address;
+};
+
+
+class LanX_SetLocoDrive : public LanX_Packet
+{
+public:
+    LanX_SetLocoDrive(uint16_t address, uint8_t speed, bool forward) :
+            LanX_Packet(LanXCommands::LAN_X_SET_LOCO_DRIVE),
+            m_address(address), m_speed(speed), m_forward(forward)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint16_t m_address;
+    uint8_t m_speed;
+    bool m_forward;
+};
+
+
+class LanX_SetLocoFunction : public LanX_Packet
+{
+public:
+    LanX_SetLocoFunction(uint16_t address, uint8_t function) :
+            LanX_Packet(LanXCommands::LAN_X_SET_LOCO_FUNCTION),
+            m_address(address), m_function(function)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint16_t m_address;
+    uint8_t m_function;
+};
+
+
+
+class LanX_SetLocoFunctionGroup : public LanX_Packet
+{
+public:
+    enum FunctionGroup {
+        GROUP_1 = 0x20,
+        GROUP_2 = 0x21,
+        GROUP_3 = 0x22,
+        GROUP_4 = 0x23,
+        GROUP_5 = 0x28,
+        GROUP_6 = 0x29,
+        GROUP_7 = 0x2a,
+        GROUP_8 = 0x2b,
+        GROUP_9 = 0x50,
+        GROUP_10 = 0x51
+    };
+
+    LanX_SetLocoFunctionGroup(uint16_t address, FunctionGroup group, uint8_t functions) :
+            LanX_Packet(LanXCommands::LAN_X_SET_LOCO_FUNCTION_GROUP),
+            m_address(address), m_group(group), m_functions(functions)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint16_t m_address;
+    uint16_t m_group;
+    uint8_t m_functions;
+};
+
+
+// ---- Z21 to client
 
 class LanX_TurnoutInfo : public LanX_Packet
 {
@@ -152,6 +239,22 @@ class LanX_LocoInfo : public LanX_Packet
 {
 public:
     LanX_LocoInfo() : LanX_Packet(LanXCommands::LAN_X_LOCO_INFO) {}
+
+    virtual void unpack(std::vector<uint8_t>& data);
+
+    uint16_t address{0};
+    bool busy{false};
+    uint8_t speed_steps{0};
+    bool direction_forward{false};
+    uint8_t speed{0};
+
+    bool double_traction{false};
+    bool smart_search{false};
+    bool f0_light{false};
+    bool f4{false};
+    bool f3{false};
+    bool f2{false};
+    bool f1{false};
 };
 
 class LanX_GetFirmwareVersionResponse : public LanX_Packet
@@ -165,8 +268,14 @@ class LanX : public Z21_DataSet
 {
 public:
     LanX();
+    LanX(LanX_Packet* command);
+
     virtual void unpack(std::vector<uint8_t>& data);
+
     LanX_Packet* command() { return m_command; }
+
+protected:
+    virtual std::vector<uint8_t> pack_data();
 
 private:
     bool check_checksum(std::vector<uint8_t>& data);

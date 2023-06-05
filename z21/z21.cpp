@@ -117,12 +117,22 @@ void Z21::handle_receive(const boost::system::error_code& error, std::size_t byt
         LanSetBroadcastFlags sbf(BroadcastFlags::DRIVING_AND_SWITCHING | BroadcastFlags::Z21_STATUS_CHANGES);
         socket.send_to(boost::asio::buffer(sbf.pack()), receiver_endpoint);
         socket.send_to(boost::asio::buffer(LanGetBroadcastFlags().pack()), receiver_endpoint);
+
+        LanX_GetLocoInfo xgli(11);
+        socket.send_to(boost::asio::buffer(LanX(&xgli).pack()), receiver_endpoint);
+
         sent_set_bc_flags = true;
     }
     else if (!sent_lan_get_code) {
         socket.send_to(boost::asio::buffer(LanGetCode().pack()), receiver_endpoint);
         socket.send_to(boost::asio::buffer(LanGetLocomode(0x0001).pack()), receiver_endpoint);
-        socket.send_to(boost::asio::buffer(LanGetTurnoutmode(0x0001).pack()), receiver_endpoint);
+
+        LanX_SetLocoDrive xsld(11, 30, false);
+        socket.send_to(boost::asio::buffer(LanX(&xsld).pack()), receiver_endpoint);
+
+        LanX_SetLocoFunction xslf(11, 0x80);
+        socket.send_to(boost::asio::buffer(LanX(&xslf).pack()), receiver_endpoint);
+
         sent_lan_get_code = true;
     }
 
