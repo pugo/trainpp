@@ -133,6 +133,9 @@ void Z21::handle_receive(const boost::system::error_code& error, std::size_t byt
         LanX_SetLocoFunction xslf(11, 0x80);
         socket.send_to(boost::asio::buffer(LanX(&xslf).pack()), receiver_endpoint);
 
+        LanX_CvRead drr(1);
+        socket.send_to(boost::asio::buffer(LanX(&drr).pack()), receiver_endpoint);
+
         sent_lan_get_code = true;
     }
 

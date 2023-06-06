@@ -74,7 +74,201 @@ protected:
 };
 
 
-// ---- Client to Z21
+// ==========================================================================
+//      Client to Z21
+// ==========================================================================
+
+
+class LanX_CvRead : public LanX_Packet
+{
+public:
+    LanX_CvRead(uint16_t cv) :
+        LanX_Packet(LanXCommands::LAN_X_CV_READ),
+        m_cv(cv)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint16_t m_cv;
+};
+
+
+class LanX_CvWrite : public LanX_Packet
+{
+public:
+    LanX_CvWrite(uint16_t cv, uint8_t value) :
+        LanX_Packet(LanXCommands::LAN_X_CV_WRITE),
+        m_cv(cv), m_value(value)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint16_t m_cv;
+    uint8_t m_value;
+};
+
+
+class LanX_CvPomWriteByte : public LanX_Packet
+{
+public:
+    LanX_CvPomWriteByte(uint16_t address, uint16_t cv, uint8_t value) :
+            LanX_Packet(LanXCommands::LAN_X_CV_POM_WRITE_BYTE),
+            m_address(address), m_cv(cv), m_value(value)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint16_t m_address;
+    uint16_t m_cv;
+    uint8_t m_value;
+};
+
+
+class LanX_CvPomWriteBit : public LanX_Packet
+{
+public:
+    LanX_CvPomWriteBit(uint16_t address, uint16_t cv, uint8_t bit_position, uint8_t value) :
+            LanX_Packet(LanXCommands::LAN_X_CV_POM_WRITE_BIT),
+            m_address(address), m_cv(cv), m_bit_position(bit_position), m_value(value)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint16_t m_address;
+    uint16_t m_cv;
+    uint8_t m_bit_position;
+    uint8_t m_value;
+};
+
+
+class LanX_CvPomReadByte : public LanX_Packet
+{
+public:
+    LanX_CvPomReadByte(uint16_t address, uint16_t cv) :
+            LanX_Packet(LanXCommands::LAN_X_CV_POM_READ_BYTE),
+            m_address(address), m_cv(cv)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint16_t m_address;
+    uint16_t m_cv;
+};
+
+
+enum PomAccessorySelection {
+    WHOLE_DECODER = 0x00,
+    SPECIFIC_OUTPUT = 0x08
+};
+
+class LanX_CvPomAccessoryWriteByte : public LanX_Packet
+{
+public:
+    LanX_CvPomAccessoryWriteByte(uint16_t address, PomAccessorySelection selction, uint8_t output, uint16_t cv, uint8_t value) :
+            LanX_Packet(LanXCommands::LAN_X_CV_POM_ACCESSORY_WRITE_BYTE),
+            m_address(address), m_selection(selction), m_output(output), m_cv(cv), m_value(value)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint16_t m_address;
+    PomAccessorySelection m_selection;
+    uint8_t m_output;
+    uint16_t m_cv;
+    uint8_t m_value;
+};
+
+
+class LanX_CvPomAccessoryWriteBit : public LanX_Packet
+{
+public:
+    LanX_CvPomAccessoryWriteBit(uint16_t address, PomAccessorySelection selction, uint8_t output, uint16_t cv, uint8_t bit_position, uint8_t value) :
+            LanX_Packet(LanXCommands::LAN_X_CV_POM_ACCESSORY_WRITE_BIT),
+            m_address(address), m_selection(selction), m_output(output), m_cv(cv), m_bit_position(bit_position), m_value(value)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint16_t m_address;
+    PomAccessorySelection m_selection;
+    uint8_t m_output;
+    uint16_t m_cv;
+    uint8_t m_bit_position;
+    uint8_t m_value;
+};
+
+
+class LanX_CvPomAccessoryReadByte : public LanX_Packet
+{
+public:
+    LanX_CvPomAccessoryReadByte(uint16_t address, PomAccessorySelection selction, uint8_t output, uint16_t cv) :
+            LanX_Packet(LanXCommands::LAN_X_CV_POM_ACCESSORY_READ_BYTE),
+            m_address(address), m_selection(selction), m_output(output), m_cv(cv)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint16_t m_address;
+    PomAccessorySelection m_selection;
+    uint8_t m_output;
+    uint16_t m_cv;
+};
+
+
+class LanX_MmWriteByte: public LanX_Packet
+{
+public:
+    LanX_MmWriteByte(uint8_t reg, uint8_t value) :
+            LanX_Packet(LanXCommands::LAN_X_MM_WRITE_BYTE),
+            m_register(reg), m_value(value)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint8_t m_register;
+    uint8_t m_value;
+};
+
+
+class LanX_DccReadRegister: public LanX_Packet
+{
+public:
+    LanX_DccReadRegister(uint8_t reg) :
+            LanX_Packet(LanXCommands::LAN_X_DCC_READ_REGISTER),
+            m_register(reg)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint8_t m_register;
+};
+
+
+class LanX_DccWriteRegister: public LanX_Packet
+{
+public:
+    LanX_DccWriteRegister(uint8_t reg, uint8_t value) :
+            LanX_Packet(LanXCommands::LAN_X_DCC_WRITE_REGISTER),
+            m_register(reg), m_value(value)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint8_t m_register;
+    uint8_t m_value;
+};
+
 
 class LanX_GetLocoInfo : public LanX_Packet
 {
@@ -124,7 +318,6 @@ protected:
 };
 
 
-
 class LanX_SetLocoFunctionGroup : public LanX_Packet
 {
 public:
@@ -155,18 +348,119 @@ protected:
 };
 
 
-// ---- Z21 to client
+
+class LanX_SetLocoBinaryState : public LanX_Packet
+{
+public:
+    LanX_SetLocoBinaryState(uint16_t address, bool on, uint8_t binary_address) :
+            LanX_Packet(LanXCommands::LAN_X_SET_LOCO_BINARY_STATE),
+            m_address(address), m_on(on), m_binary_address(binary_address)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint16_t m_address;
+    bool m_on;
+    uint8_t m_binary_address;
+};
+
+
+
+class LanX_GetTurnoutInfo : public LanX_Packet
+{
+public:
+    LanX_GetTurnoutInfo(uint16_t address) :
+            LanX_Packet(LanXCommands::LAN_X_GET_TURNOUT_INFO),
+            m_address(address)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint16_t m_address;
+};
+
+
+class LanX_SetTurnout : public LanX_Packet
+{
+public:
+    LanX_SetTurnout(uint16_t address, uint8_t value) :
+            LanX_Packet(LanXCommands::LAN_X_SET_TURNOUT),
+            m_address(address), m_value(value)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint16_t m_address;
+    uint8_t m_value;
+};
+
+
+
+class LanX_SetExtAccessory : public LanX_Packet
+{
+public:
+    LanX_SetExtAccessory(uint16_t address, uint8_t state) :
+            LanX_Packet(LanXCommands::LAN_X_SET_EXT_ACCESSORY),
+            m_address(address), m_state(state)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint16_t m_address;
+    uint8_t m_state;
+};
+
+
+class LanX_GetExtAccessoryInfo : public LanX_Packet
+{
+public:
+    LanX_GetExtAccessoryInfo(uint16_t address) :
+            LanX_Packet(LanXCommands::LAN_X_GET_EXT_ACCESSORY_INFO),
+            m_address(address)
+    {}
+
+    virtual std::vector<uint8_t> pack();
+
+protected:
+    uint16_t m_address;
+};
+
+// ==========================================================================
+//      Z21 to client
+// ==========================================================================
 
 class LanX_TurnoutInfo : public LanX_Packet
 {
 public:
+    enum TurnoutStatus {
+        UNKNOWN = 255,
+        NOT_SWITCHED = 0,
+        SWITCHED_P0 = 1,
+        SWITCHED_P1 = 2,
+    };
+
     LanX_TurnoutInfo() : LanX_Packet(LanXCommands::LAN_X_TURNOUT_INFO) {}
+
+    virtual void unpack(std::vector<uint8_t>& data);
+
+    uint16_t address{0};
+    TurnoutStatus status;
 };
 
 class LanX_ExtAccessoryInfo : public LanX_Packet
 {
 public:
     LanX_ExtAccessoryInfo() : LanX_Packet(LanXCommands::LAN_X_EXT_ACCESSORY_INFO) {}
+
+    virtual void unpack(std::vector<uint8_t>& data);
+
+    uint16_t address{0};
+    uint8_t state{0};
+    bool data_valid{false};
 };
 
 class LanX_BcTrackPowerOff : public LanX_Packet
@@ -227,6 +521,11 @@ class LanX_CvResult : public LanX_Packet
 {
 public:
     LanX_CvResult() : LanX_Packet(LanXCommands::LAN_X_CV_RESULT) {}
+
+    virtual void unpack(std::vector<uint8_t>& data);
+
+    uint16_t cv{0};
+    uint8_t value{0};
 };
 
 class LanX_BcStopped : public LanX_Packet
@@ -238,23 +537,29 @@ public:
 class LanX_LocoInfo : public LanX_Packet
 {
 public:
-    LanX_LocoInfo() : LanX_Packet(LanXCommands::LAN_X_LOCO_INFO) {}
+    enum SpeedSteps {
+        UNKNOWN = 255,
+        DCC_14 = 0,
+        DCC_28 = 2,
+        DCC_128 = 4,
+    };
+
+    LanX_LocoInfo() : LanX_Packet(LanXCommands::LAN_X_LOCO_INFO)
+    {
+        functions.resize(32);
+    }
 
     virtual void unpack(std::vector<uint8_t>& data);
 
     uint16_t address{0};
     bool busy{false};
-    uint8_t speed_steps{0};
+    SpeedSteps speed_steps{SpeedSteps::UNKNOWN};
     bool direction_forward{false};
     uint8_t speed{0};
 
     bool double_traction{false};
     bool smart_search{false};
-    bool f0_light{false};
-    bool f4{false};
-    bool f3{false};
-    bool f2{false};
-    bool f1{false};
+    std::vector<bool> functions;
 };
 
 class LanX_GetFirmwareVersionResponse : public LanX_Packet
