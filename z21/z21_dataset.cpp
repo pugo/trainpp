@@ -109,7 +109,7 @@ std::vector<uint8_t> LanGetLocomode::pack_data()
 void LanGetLocomode::unpack(std::vector<uint8_t> &data)
 {
     address = (data[0] << 8) + data[1];
-    mode = static_cast<Locomodes>(data[2]);
+    mode = static_cast<Locomode>(data[2]);
 }
 
 

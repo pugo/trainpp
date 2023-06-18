@@ -127,16 +127,22 @@ void Z21::handle_receive(const boost::system::error_code& error, std::size_t byt
         socket.send_to(boost::asio::buffer(LanGetCode().pack()), receiver_endpoint);
         socket.send_to(boost::asio::buffer(LanGetLocomode(0x0001).pack()), receiver_endpoint);
 
-        LanX_SetLocoDrive xsld(11, 30, false);
-        socket.send_to(boost::asio::buffer(LanX(&xsld).pack()), receiver_endpoint);
-
-        LanX_SetLocoFunction xslf(11, 0x80);
-        socket.send_to(boost::asio::buffer(LanX(&xslf).pack()), receiver_endpoint);
-
+//        LanX_SetLocoDrive xsld(10, 24, true);
+//        socket.send_to(boost::asio::buffer(LanX(&xsld).pack()), receiver_endpoint);
+//
+//        LanX_SetLocoFunction xslf(10, 0x80);
+//        socket.send_to(boost::asio::buffer(LanX(&xslf).pack()), receiver_endpoint);
+//
         LanX_CvRead drr(1);
         socket.send_to(boost::asio::buffer(LanX(&drr).pack()), receiver_endpoint);
 
         sent_lan_get_code = true;
+    }
+    else if (!sent_set_cv) {
+        sleep(2);
+        LanX_SetTrackPowerOn stpo;
+        socket.send_to(boost::asio::buffer(LanX(&stpo).pack()), receiver_endpoint);
+        sent_set_cv = true;
     }
 
     socket.async_receive_from(
@@ -225,7 +231,8 @@ void Z21::handle_dataset(uint16_t size, uint16_t id, std::vector<uint8_t>& data)
             }   break;
             case 0x60: {
                 LanGetLocomode* lm = static_cast<LanGetLocomode*>(dataset);
-                BOOST_LOG_TRIVIAL(debug) << " ---> LAN_GET_LOCOMODE: " << std::hex << (int)lm->address << " = " << (int)static_cast<uint8_t>(lm->mode);
+                BOOST_LOG_TRIVIAL(debug) << " ---> LAN_GET_LOCOMODE: " << std::hex << (int)lm->address << " = " <<
+                                                                                    (lm->mode == Locomode::DCC ? "DCC" : "MM");
             } break;
             case 0x70: {
                 LanGetTurnoutmode* lm = static_cast<LanGetTurnoutmode*>(dataset);

@@ -38,6 +38,7 @@ private:
     bool sent_set_bc_flags{false};
     bool sent_get_system_state{false};
     bool sent_lan_get_code{false};
+    bool sent_set_cv{false};
 
     uint32_t m_serial_number{0};
 

@@ -107,7 +107,7 @@ private:
 };
 
 
-enum class Locomodes : uint8_t {
+enum class Locomode : uint8_t {
     UNKNOWN = 255,
     DCC = 0,
     MM = 1
@@ -123,12 +123,11 @@ public:
 
     virtual void unpack(std::vector<uint8_t>& data);
 
-    Locomodes mode{Locomodes::UNKNOWN};
+    Locomode mode{Locomode::UNKNOWN};
     uint16_t address;
 
 protected:
     virtual std::vector<uint8_t> pack_data();
-
 };
 
 
@@ -136,7 +135,7 @@ protected:
 class LanSetLocomode : public Z21_DataSet
 {
 public:
-    LanSetLocomode(uint16_t address, Locomodes mode) :
+    LanSetLocomode(uint16_t address, Locomode mode) :
             m_address(address), m_mode(mode)
     { m_id = 0x61; }
 
@@ -144,7 +143,7 @@ private:
     virtual std::vector<uint8_t> pack_data();
 
     uint16_t m_address;
-    Locomodes m_mode;
+    Locomode m_mode;
 };
 
 
@@ -161,7 +160,7 @@ public:
 class LanSetTurnoutmode : public LanSetLocomode
 {
 public:
-    LanSetTurnoutmode(uint16_t address, Locomodes mode) : LanSetLocomode(address, mode)
+    LanSetTurnoutmode(uint16_t address, Locomode mode) : LanSetLocomode(address, mode)
     { m_id = 0x71; }
 };
 

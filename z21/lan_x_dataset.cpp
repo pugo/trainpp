@@ -157,6 +157,58 @@ void LanX_Packet::append_checksum(std::vector<uint8_t>& data)
 
 // ==== Client to Z21 ====
 
+// LAN_X_GET_VERSION
+std::vector<uint8_t> LanX_GetVersion::pack()
+{
+    std::vector<uint8_t> result;
+    result.insert(result.end(), 0x21);
+    result.insert(result.end(), 0x21);
+    append_checksum(result);
+    return result;
+}
+
+// LAN_X_GET_STATUS
+std::vector<uint8_t> LanX_GetStatus::pack()
+{
+    std::vector<uint8_t> result;
+    result.insert(result.end(), 0x21);
+    result.insert(result.end(), 0x24);
+    append_checksum(result);
+    return result;
+}
+
+// LAN_X_SET_TRACK_POWER_OFF
+std::vector<uint8_t> LanX_SetTrackPowerOff::pack()
+{
+    std::vector<uint8_t> result;
+    result.insert(result.end(), 0x21);
+    result.insert(result.end(), 0x80);
+    append_checksum(result);
+    return result;
+}
+
+// LAN_X_SET_TRACK_POWER_ON
+std::vector<uint8_t> LanX_SetTrackPowerOn::pack()
+{
+    std::vector<uint8_t> result;
+    result.insert(result.end(), 0x21);
+    result.insert(result.end(), 0x81);
+    append_checksum(result);
+    return result;
+}
+
+// LAN_X_DCC_READ_REGISTER
+std::vector<uint8_t> LanX_DccReadRegister::pack()
+{
+    std::vector<uint8_t> result;
+    result.insert(result.end(), 0x22);
+    result.insert(result.end(), 0x11);
+    result.insert(result.end(), m_register);
+    append_checksum(result);
+    BOOST_LOG_TRIVIAL(debug) << "LanX_DccReadRegister::pack(): " << PRINT_HEX(result);
+    return result;
+}
+
 // LAN_X_CV_READ
 std::vector<uint8_t> LanX_CvRead::pack()
 {
@@ -169,6 +221,19 @@ std::vector<uint8_t> LanX_CvRead::pack()
     result.insert(result.end(), cv_address & 0xff);
     append_checksum(result);
     BOOST_LOG_TRIVIAL(debug) << "LanX_CvRead::pack(): " << PRINT_HEX(result);
+    return result;
+}
+
+// LAN_X_DCC_WRITE_REGISTER
+std::vector<uint8_t> LanX_DccWriteRegister::pack()
+{
+    std::vector<uint8_t> result;
+    result.insert(result.end(), 0x23);
+    result.insert(result.end(), 0x12);
+    result.insert(result.end(), m_register);
+    result.insert(result.end(), m_value);
+    append_checksum(result);
+    BOOST_LOG_TRIVIAL(debug) << "LanX_DccWriteRegister::pack(): " << PRINT_HEX(result);
     return result;
 }
 
@@ -185,6 +250,164 @@ std::vector<uint8_t> LanX_CvWrite::pack()
     result.insert(result.end(), m_value);
     append_checksum(result);
     BOOST_LOG_TRIVIAL(debug) << "LanX_CvWrite::pack(): " << PRINT_HEX(result);
+    return result;
+}
+
+// LAN_X_MM_WRITE_BYTE
+std::vector<uint8_t> LanX_MmWriteByte::pack()
+{
+    std::vector<uint8_t> result;
+    if (m_register <= 78) {
+        result.insert(result.end(), 0x24);
+        result.insert(result.end(), 0xff);
+        result.insert(result.end(), 0x00);
+        result.insert(result.end(), m_register);
+        result.insert(result.end(), m_value);
+        append_checksum(result);
+        // TODO: better error result than bad package.
+    }
+    BOOST_LOG_TRIVIAL(debug) << "LanX_DccWriteRegister::pack(): " << PRINT_HEX(result);
+    return result;
+}
+
+// LAN_X_GET_TURNOUT_INFO
+std::vector<uint8_t> LanX_GetTurnoutInfo::pack()
+{
+    std::vector<uint8_t> result;
+    result.insert(result.end(), 0x43);
+    result.insert(result.end(), m_address >> 8);
+    result.insert(result.end(), m_address & 0xff);
+    append_checksum(result);
+    BOOST_LOG_TRIVIAL(debug) << "LanX_GetTurnoutInfo::pack(): " << PRINT_HEX(result);
+    return result;
+}
+
+
+// LAN_X_GET_EXT_ACCESSORY_INFO
+std::vector<uint8_t> LanX_GetExtAccessoryInfo::pack()
+{
+    std::vector<uint8_t> result;
+    result.insert(result.end(), 0x44);
+    result.insert(result.end(), m_address >> 8);
+    result.insert(result.end(), m_address & 0xff);
+    result.insert(result.end(), 0x00);
+    append_checksum(result);
+    BOOST_LOG_TRIVIAL(debug) << "LanX_GetExtAccessoryInfo::pack(): " << PRINT_HEX(result);
+    return result;
+}
+
+// LAN_X_SET_TURNOUT
+// TODO: Better value handling of switch settings.
+std::vector<uint8_t> LanX_SetTurnout::pack()
+{
+    std::vector<uint8_t> result;
+    result.insert(result.end(), 0x53);
+    result.insert(result.end(), m_address >> 8);
+    result.insert(result.end(), m_address & 0xff);
+    result.insert(result.end(), m_value);
+    append_checksum(result);
+    BOOST_LOG_TRIVIAL(debug) << "LanX_SetTurnout::pack(): " << PRINT_HEX(result);
+    return result;
+}
+
+// LAN_X_SET_EXT_ACCESSORY
+std::vector<uint8_t> LanX_SetExtAccessory::pack()
+{
+    std::vector<uint8_t> result;
+    result.insert(result.end(), 0x54);
+    result.insert(result.end(), m_address >> 8);
+    result.insert(result.end(), m_address & 0xff);
+    result.insert(result.end(), m_state);
+    result.insert(result.end(), 0x00);
+    append_checksum(result);
+    BOOST_LOG_TRIVIAL(debug) << "LanX_SetExtAccessory::pack(): " << PRINT_HEX(result);
+    return result;
+}
+
+// LAN_X_SET_STOP
+std::vector<uint8_t> LanX_SetStop::pack()
+{
+    std::vector<uint8_t> result;
+    result.insert(result.end(), 0x80);
+    append_checksum(result);
+    return result;
+}
+
+// LAN_X_GET_LOCO_INFO
+std::vector<uint8_t> LanX_GetLocoInfo::pack()
+{
+    std::vector<uint8_t> result;
+    result.insert(result.end(), 0xe3);
+    result.insert(result.end(), 0xf0);
+    result.insert(result.end(), (m_address >> 8) & 0x3f);
+    result.insert(result.end(), m_address & 0xff);
+    append_checksum(result);
+    BOOST_LOG_TRIVIAL(debug) << "LanX_GetLocoInfo::pack(): " << PRINT_HEX(result);
+    return result;
+}
+
+// LAN_X_SET_LOCO_DRIVE
+std::vector<uint8_t> LanX_SetLocoDrive::pack()
+{
+    std::vector<uint8_t> result;
+    result.insert(result.end(), 0xe4);
+    result.insert(result.end(), 0x12);
+    result.insert(result.end(), (m_address >> 8) & 0x3f);
+    result.insert(result.end(), m_address & 0xff);
+    result.insert(result.end(), m_speed + (m_forward ? 0x80 : 0));
+    append_checksum(result);
+    BOOST_LOG_TRIVIAL(debug) << "LanX_SetLocoDrive::pack(): " << PRINT_HEX(result);
+    return result;
+}
+
+// LAN_X_SET_LOCO_FUNCTION
+std::vector<uint8_t> LanX_SetLocoFunction::pack()
+{
+    std::vector<uint8_t> result;
+    result.insert(result.end(), 0xe4);
+    result.insert(result.end(), 0xf8);
+    result.insert(result.end(), (m_address >> 8) & 0x3f);
+    result.insert(result.end(), m_address & 0xff);
+    result.insert(result.end(), m_function);
+    append_checksum(result);
+    BOOST_LOG_TRIVIAL(debug) << "LanX_SetLocoFunction::pack(): " << PRINT_HEX(result);
+    return result;
+}
+
+// LAN_X_SET_LOCO_FUNCTION_GROUP
+std::vector<uint8_t> LanX_SetLocoFunctionGroup::pack()
+{
+    std::vector<uint8_t> result;
+
+    if (m_group == GROUP_1 || m_group == GROUP_2 || m_group == GROUP_3 || m_group == GROUP_4 || m_group == GROUP_5 ||
+        m_group == GROUP_6 || m_group == GROUP_7 || m_group == GROUP_8 || m_group == GROUP_9 || m_group == GROUP_10)
+    {
+        result.insert(result.end(), 0xe4);
+        result.insert(result.end(), m_group);
+        result.insert(result.end(), (m_address >> 8) & 0x3f);
+        result.insert(result.end(), m_address & 0xff);
+        result.insert(result.end(), m_functions);
+        append_checksum(result);
+    }
+
+    BOOST_LOG_TRIVIAL(debug) << "LanX_SetLocoFunction::pack(): " << PRINT_HEX(result);
+    return result;
+}
+
+// LAN_X_SET_LOCO_BINARY_STATE
+std::vector<uint8_t> LanX_SetLocoBinaryState::pack()
+{
+    std::vector<uint8_t> result;
+    result.insert(result.end(), 0xe5);
+    result.insert(result.end(), 0x5f);
+    result.insert(result.end(), (m_address >> 8) & 0x3f);
+    result.insert(result.end(), m_address & 0xff);
+
+    result.insert(result.end(), (m_on ? 0x80 : 0) + (m_address & 0x7f));    // Low order is 7 bits
+    result.insert(result.end(), (m_address >> 7) & 0xff);
+    append_checksum(result);
+
+    BOOST_LOG_TRIVIAL(debug) << "LanX_SetLocoBinaryState::pack(): " << PRINT_HEX(result);
     return result;
 }
 
@@ -295,178 +518,16 @@ std::vector<uint8_t> LanX_CvPomAccessoryReadByte::pack()
     return result;
 }
 
-// LAN_X_MM_WRITE_BYTE
-std::vector<uint8_t> LanX_MmWriteByte::pack()
+// LAN_X_GET_FIRMWARE_VERSION
+std::vector<uint8_t> LanX_GetFirmwareVersion::pack()
 {
     std::vector<uint8_t> result;
-    if (m_register <= 78) {
-        result.insert(result.end(), 0x24);
-        result.insert(result.end(), 0xff);
-        result.insert(result.end(), 0x00);
-        result.insert(result.end(), m_register);
-        result.insert(result.end(), m_value);
-        append_checksum(result);
-        // TODO: better error result than bad package.
-    }
-    BOOST_LOG_TRIVIAL(debug) << "LanX_DccWriteRegister::pack(): " << PRINT_HEX(result);
-    return result;
-}
-
-// LAN_X_DCC_READ_REGISTER
-std::vector<uint8_t> LanX_DccReadRegister::pack()
-{
-    std::vector<uint8_t> result;
-    result.insert(result.end(), 0x22);
-    result.insert(result.end(), 0x11);
-    result.insert(result.end(), m_register);
+    result.insert(result.end(), 0xf1);
+    result.insert(result.end(), 0x0a);
     append_checksum(result);
-    BOOST_LOG_TRIVIAL(debug) << "LanX_DccReadRegister::pack(): " << PRINT_HEX(result);
     return result;
 }
 
-// LAN_X_DCC_WRITE_REGISTER
-std::vector<uint8_t> LanX_DccWriteRegister::pack()
-{
-    std::vector<uint8_t> result;
-    result.insert(result.end(), 0x23);
-    result.insert(result.end(), 0x12);
-    result.insert(result.end(), m_register);
-    result.insert(result.end(), m_value);
-    append_checksum(result);
-    BOOST_LOG_TRIVIAL(debug) << "LanX_DccWriteRegister::pack(): " << PRINT_HEX(result);
-    return result;
-}
-
-// LAN_X_GET_LOCO_INFO
-std::vector<uint8_t> LanX_GetLocoInfo::pack()
-{
-    std::vector<uint8_t> result;
-    result.insert(result.end(), 0xe3);
-    result.insert(result.end(), 0xf0);
-    result.insert(result.end(), (m_address >> 8) & 0x3f);
-    result.insert(result.end(), m_address & 0xff);
-    append_checksum(result);
-    BOOST_LOG_TRIVIAL(debug) << "LanX_GetLocoInfo::pack(): " << PRINT_HEX(result);
-    return result;
-}
-
-// LAN_X_SET_LOCO_DRIVE
-std::vector<uint8_t> LanX_SetLocoDrive::pack()
-{
-    std::vector<uint8_t> result;
-    result.insert(result.end(), 0xe4);
-    result.insert(result.end(), 0x12);
-    result.insert(result.end(), (m_address >> 8) & 0x3f);
-    result.insert(result.end(), m_address & 0xff);
-    result.insert(result.end(), m_speed + (m_forward ? 0x80 : 0));
-    append_checksum(result);
-    BOOST_LOG_TRIVIAL(debug) << "LanX_SetLocoDrive::pack(): " << PRINT_HEX(result);
-    return result;
-}
-
-// LAN_X_SET_LOCO_FUNCTION
-std::vector<uint8_t> LanX_SetLocoFunction::pack()
-{
-    std::vector<uint8_t> result;
-    result.insert(result.end(), 0xe4);
-    result.insert(result.end(), 0xf8);
-    result.insert(result.end(), (m_address >> 8) & 0x3f);
-    result.insert(result.end(), m_address & 0xff);
-    result.insert(result.end(), m_function);
-    append_checksum(result);
-    BOOST_LOG_TRIVIAL(debug) << "LanX_SetLocoFunction::pack(): " << PRINT_HEX(result);
-    return result;
-}
-
-// LAN_X_SET_LOCO_FUNCTION_GROUP
-std::vector<uint8_t> LanX_SetLocoFunctionGroup::pack()
-{
-    std::vector<uint8_t> result;
-
-    if (m_group == GROUP_1 || m_group == GROUP_2 || m_group == GROUP_3 || m_group == GROUP_4 || m_group == GROUP_5 ||
-        m_group == GROUP_6 || m_group == GROUP_7 || m_group == GROUP_8 || m_group == GROUP_9 || m_group == GROUP_10)
-    {
-        result.insert(result.end(), 0xe4);
-        result.insert(result.end(), m_group);
-        result.insert(result.end(), (m_address >> 8) & 0x3f);
-        result.insert(result.end(), m_address & 0xff);
-        result.insert(result.end(), m_functions);
-        append_checksum(result);
-    }
-
-    BOOST_LOG_TRIVIAL(debug) << "LanX_SetLocoFunction::pack(): " << PRINT_HEX(result);
-    return result;
-}
-
-// LAN_X_SET_LOCO_BINARY_STATE
-std::vector<uint8_t> LanX_SetLocoBinaryState::pack()
-{
-    std::vector<uint8_t> result;
-    result.insert(result.end(), 0xe5);
-    result.insert(result.end(), 0x5f);
-    result.insert(result.end(), (m_address >> 8) & 0x3f);
-    result.insert(result.end(), m_address & 0xff);
-
-    result.insert(result.end(), (m_on ? 0x80 : 0) + (m_address & 0x7f));    // Low order is 7 bits
-    result.insert(result.end(), (m_address >> 7) & 0xff);
-    append_checksum(result);
-
-    BOOST_LOG_TRIVIAL(debug) << "LanX_SetLocoBinaryState::pack(): " << PRINT_HEX(result);
-    return result;
-}
-
-// LAN_X_GET_TURNOUT_INFO
-std::vector<uint8_t> LanX_GetTurnoutInfo::pack()
-{
-    std::vector<uint8_t> result;
-    result.insert(result.end(), 0x43);
-    result.insert(result.end(), m_address >> 8);
-    result.insert(result.end(), m_address & 0xff);
-    append_checksum(result);
-    BOOST_LOG_TRIVIAL(debug) << "LanX_GetTurnoutInfo::pack(): " << PRINT_HEX(result);
-    return result;
-}
-
-// LAN_X_SET_TURNOUT
-// TODO: Better value handling of switch settings.
-std::vector<uint8_t> LanX_SetTurnout::pack()
-{
-    std::vector<uint8_t> result;
-    result.insert(result.end(), 0x53);
-    result.insert(result.end(), m_address >> 8);
-    result.insert(result.end(), m_address & 0xff);
-    result.insert(result.end(), m_value);
-    append_checksum(result);
-    BOOST_LOG_TRIVIAL(debug) << "LanX_SetTurnout::pack(): " << PRINT_HEX(result);
-    return result;
-}
-
-// LAN_X_SET_EXT_ACCESSORY
-std::vector<uint8_t> LanX_SetExtAccessory::pack()
-{
-    std::vector<uint8_t> result;
-    result.insert(result.end(), 0x54);
-    result.insert(result.end(), m_address >> 8);
-    result.insert(result.end(), m_address & 0xff);
-    result.insert(result.end(), m_state);
-    result.insert(result.end(), 0x00);
-    append_checksum(result);
-    BOOST_LOG_TRIVIAL(debug) << "LanX_SetExtAccessory::pack(): " << PRINT_HEX(result);
-    return result;
-}
-
-// LAN_X_GET_EXT_ACCESSORY_INFO
-std::vector<uint8_t> LanX_GetExtAccessoryInfo::pack()
-{
-    std::vector<uint8_t> result;
-    result.insert(result.end(), 0x44);
-    result.insert(result.end(), m_address >> 8);
-    result.insert(result.end(), m_address & 0xff);
-    result.insert(result.end(), 0x00);
-    append_checksum(result);
-    BOOST_LOG_TRIVIAL(debug) << "LanX_GetExtAccessoryInfo::pack(): " << PRINT_HEX(result);
-    return result;
-}
 
 // ==== Z21 to client ====
 
