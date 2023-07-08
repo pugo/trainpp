@@ -1,21 +1,33 @@
+/* TrainPP
+ * Copyright (C) 2023 Anders Piniesjö
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, version 2
+ * of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
 #include <iostream>
 #include <boost/program_options.hpp>
 #include <boost/log/trivial.hpp>
 
 #include "z21/z21.h"
 
-
 using namespace boost;
 namespace po = boost::program_options;
 
 
-
-int main(int argc, char* argv[]) {
-
-    std::string input_file;
-    std::string public_key_file;
-    std::string output_dir;
-
+int main(int argc, char* argv[])
+{
     try {
         po::options_description desc("Allowed options");
         desc.add_options();
@@ -41,8 +53,6 @@ int main(int argc, char* argv[]) {
         std::cout <<  e.what() << std::endl;
         return 1;
     }
-
-    std::cout << "Hello, World!" << std::endl;
 
     Z21 z21;
     z21.connect();

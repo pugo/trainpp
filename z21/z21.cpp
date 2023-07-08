@@ -1,17 +1,32 @@
+/* TrainPP
+ * Copyright (C) 2023 Anders Piniesjö
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, version 2
+ * of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
 #include <iostream>
 #include <boost/program_options.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/array.hpp>
 #include <boost/bind.hpp>
 
-
 #include "z21.h"
 #include "z21_dataset.h"
 #include "lan_x_dataset.h"
 
-
 using boost::asio::ip::udp;
-
 
 
 Z21::Z21() :
