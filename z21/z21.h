@@ -7,7 +7,9 @@
 
 class Z21_DataSet;
 
-
+/**
+ * Represents an instance of a Roco Z21.
+ */
 class Z21
 {
 public:
@@ -32,7 +34,6 @@ private:
     boost::asio::io_context io_context;
     boost::asio::ip::udp::endpoint receiver_endpoint;
     boost::asio::ip::udp::socket socket;
-//    boost::asio::ip::udp::endpoint remote_endpoint;
 
     bool sent_get_hw_info{false};
     bool sent_set_bc_flags{false};

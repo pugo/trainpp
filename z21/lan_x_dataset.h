@@ -55,6 +55,9 @@ enum class LanXCommands
 };
 
 
+/**
+ * Base class for all LanX packets embedded in Z21 DataSets (commands).
+ */
 class LanX_Packet
 {
 public:

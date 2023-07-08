@@ -16,6 +16,9 @@ using boost::adaptors::transformed;
 constexpr size_t header_size = 4;
 
 
+/**
+ * Base class for all Z21 DataSets (commands).
+ */
 class Z21_DataSet
 {
 public:
@@ -85,7 +88,6 @@ public:
 class LanSetBroadcastFlags : public Z21_DataSet
 {
 public:
-
     LanSetBroadcastFlags(uint32_t flags) : m_flags(flags) { m_id = 0x50; }
 
 private:

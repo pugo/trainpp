@@ -76,19 +76,19 @@ void Z21::listen()
 
 void Z21::handle_receive(const boost::system::error_code& error, std::size_t bytes_transferred)
 {
-    BOOST_LOG_TRIVIAL(debug) << "- Z21 serial number: " << m_serial_number;
-    BOOST_LOG_TRIVIAL(debug) << "- Z21 HW type: " << m_hw_type;
-    BOOST_LOG_TRIVIAL(debug) << "- Z21 firmware version: " << m_fw_version;
-    BOOST_LOG_TRIVIAL(debug) << "- Main current: " << (int)m_main_current << " mA";
-    BOOST_LOG_TRIVIAL(debug) << "- Prog current: " << (int)m_prog_current << " mA";
-    BOOST_LOG_TRIVIAL(debug) << "- Filtered main current: " << (int)m_filtered_main_current << " mA";
-    BOOST_LOG_TRIVIAL(debug) << "- Temperature: " << (int)m_temperature;
-    BOOST_LOG_TRIVIAL(debug) << "- Supply voltage: " << (int)m_supply_voltage / 1000 << " V";
-    BOOST_LOG_TRIVIAL(debug) << "- VCC voltage: " << (int)m_vcc_voltage / 1000 << " V";
-    BOOST_LOG_TRIVIAL(debug) << "- Emergency stop: " << (emergency_stop ? "yes" : "no");
-    BOOST_LOG_TRIVIAL(debug) << "- Track voltage off: " << (track_voltage_off ? "yes" : "no");
-    BOOST_LOG_TRIVIAL(debug) << "- Short circuit: " << (short_cirtcuit ? "yes" : "no");
-    BOOST_LOG_TRIVIAL(debug) << "- Programming mode: " << (programming_mode ? "yes" : "no");
+//    BOOST_LOG_TRIVIAL(debug) << "- Z21 serial number: " << m_serial_number;
+//    BOOST_LOG_TRIVIAL(debug) << "- Z21 HW type: " << m_hw_type;
+//    BOOST_LOG_TRIVIAL(debug) << "- Z21 firmware version: " << m_fw_version;
+//    BOOST_LOG_TRIVIAL(debug) << "- Main current: " << (int)m_main_current << " mA";
+//    BOOST_LOG_TRIVIAL(debug) << "- Prog current: " << (int)m_prog_current << " mA";
+//    BOOST_LOG_TRIVIAL(debug) << "- Filtered main current: " << (int)m_filtered_main_current << " mA";
+//    BOOST_LOG_TRIVIAL(debug) << "- Temperature: " << (int)m_temperature;
+//    BOOST_LOG_TRIVIAL(debug) << "- Supply voltage: " << (int)m_supply_voltage / 1000 << " V";
+//    BOOST_LOG_TRIVIAL(debug) << "- VCC voltage: " << (int)m_vcc_voltage / 1000 << " V";
+//    BOOST_LOG_TRIVIAL(debug) << "- Emergency stop: " << (emergency_stop ? "yes" : "no");
+//    BOOST_LOG_TRIVIAL(debug) << "- Track voltage off: " << (track_voltage_off ? "yes" : "no");
+//    BOOST_LOG_TRIVIAL(debug) << "- Short circuit: " << (short_cirtcuit ? "yes" : "no");
+//    BOOST_LOG_TRIVIAL(debug) << "- Programming mode: " << (programming_mode ? "yes" : "no");
 
     if (!error || error == boost::asio::error::message_size) {
         size_t pos = 0;
@@ -118,7 +118,7 @@ void Z21::handle_receive(const boost::system::error_code& error, std::size_t byt
         socket.send_to(boost::asio::buffer(sbf.pack()), receiver_endpoint);
         socket.send_to(boost::asio::buffer(LanGetBroadcastFlags().pack()), receiver_endpoint);
 
-        LanX_GetLocoInfo xgli(11);
+        LanX_GetLocoInfo xgli(10);
         socket.send_to(boost::asio::buffer(LanX(&xgli).pack()), receiver_endpoint);
 
         sent_set_bc_flags = true;
@@ -133,8 +133,8 @@ void Z21::handle_receive(const boost::system::error_code& error, std::size_t byt
 //        LanX_SetLocoFunction xslf(10, 0x80);
 //        socket.send_to(boost::asio::buffer(LanX(&xslf).pack()), receiver_endpoint);
 //
-        LanX_CvRead drr(1);
-        socket.send_to(boost::asio::buffer(LanX(&drr).pack()), receiver_endpoint);
+//        LanX_CvRead drr(1);
+//        socket.send_to(boost::asio::buffer(LanX(&drr).pack()), receiver_endpoint);
 
         sent_lan_get_code = true;
     }
