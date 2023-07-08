@@ -16,4 +16,5 @@ target_link_libraries (trainpp ${Boost_LIBRARIES} )
 add_library(trainpp_lib STATIC ${LIB_SOURCES})
 target_link_libraries (trainpp_lib ${Boost_LIBRARIES} )
 
+enable_testing()
 add_subdirectory(tests)
