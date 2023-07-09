@@ -24,7 +24,7 @@
 
 #include "z21.h"
 #include "z21_dataset.h"
-#include "lan_x_dataset.h"
+#include "lan_x_command.h"
 
 using boost::asio::ip::udp;
 

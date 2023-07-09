@@ -26,6 +26,8 @@
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/format.hpp>
 
+#include "lan_x_packet.h"
+
 using boost::adaptors::transformed;
 
 #define PRINT_HEX(v) (boost::algorithm::join(v | transformed([](uint8_t d) { return (boost::format("%02x") % (unsigned)d).str(); }), " "))
@@ -43,6 +45,7 @@ public:
         LAN_GET_SERIAL_NUMBER = 0x10,
         LAN_GET_CODE = 0x18,
         LAN_GET_HWINFO = 0x1a,
+        LAN_X = 0x40,
         LAN_SET_BROADCASTFLAGS = 0x50,
         LAN_GET_BROADCASTFLAGS = 0x51,
         LAN_GET_LOCOMODE = 0x60,
@@ -112,6 +115,29 @@ public:
 
     uint32_t hw_type;
     std::string fw_version;
+};
+
+
+// LAN_X (0x40)
+class LanX : public Z21_DataSet
+{
+public:
+    LanX();
+    LanX(LanX_Packet* command);
+
+    virtual void unpack(std::vector<uint8_t>& data);
+
+    LanX_Packet* command() { return m_command; }
+
+protected:
+    virtual std::vector<uint8_t> pack_data();
+
+private:
+    bool check_checksum(std::vector<uint8_t>& data);
+
+    std::map<LanXCommands, LanX_Packet*> command_handlers;
+
+    LanX_Packet* m_command{nullptr};
 };
 
 
