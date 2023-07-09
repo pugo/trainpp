@@ -28,16 +28,19 @@ namespace po = boost::program_options;
 
 int main(int argc, char* argv[])
 {
+    std::string z21_host;
+    std::string z21_port = "21105";
+
     try {
         po::options_description desc("Allowed options");
-        desc.add_options();
-//                ("help,?", "produce help message")
-//                ("input-file,i", po::value<std::string>(&input_file)->required(), "input file")
-//                ("public-key,p", po::value<std::string>(&public_key_file)->required(), "public RSA key file")
+        desc.add_options()
+                ("help,?", "produce help message")
+                ("z21-host,h", po::value<std::string>(&z21_host), "Z21 host or IP address")
+                ("z21-port,p", po::value<std::string>(&z21_port), "Z21 port (default: 21105)");
 //                ("output-dir,o", po::value<std::string>(&output_dir)->required(), "output directory");
 
         po::positional_options_description p;
-        p.add("input-file", -1);
+//        p.add("input-file", -1);
 
         po::variables_map vm;
         po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
@@ -54,7 +57,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    Z21 z21;
+    Z21 z21(z21_host, z21_port);
     z21.connect();
     z21.listen();
 

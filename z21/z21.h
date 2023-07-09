@@ -22,6 +22,7 @@
 #include <map>
 
 #include <boost/asio.hpp>
+#include <string>
 
 class Z21_DataSet;
 
@@ -31,7 +32,7 @@ class Z21_DataSet;
 class Z21
 {
 public:
-    Z21();
+    Z21(const std::string& z21_host, const std::string& z21_port);
     ~Z21();
 
     bool connect();
@@ -46,6 +47,9 @@ public:
     const std::string& fw_version() const { return m_fw_version; }
 
 private:
+    const std::string host;
+    const std::string port;
+
     std::vector<uint8_t> recv_buf;
     std::map<uint16_t, Z21_DataSet*> command_handlers;
 

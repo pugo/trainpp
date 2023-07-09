@@ -29,11 +29,11 @@
 using boost::asio::ip::udp;
 
 
-Z21::Z21() :
+Z21::Z21(const std::string& z21_host, const std::string& z21_port) :
+    host(z21_host), port(z21_port),
     socket(io_context)
 {
     recv_buf.resize(128);
-
     command_handlers[Z21_DataSet::LAN_GET_SERIAL_NUMBER] = new LanGetSerialNumber();
     command_handlers[Z21_DataSet::LAN_GET_CODE] = new LanGetCode();
     command_handlers[Z21_DataSet::LAN_GET_HWINFO] = new LanGetHWInfo();
@@ -44,7 +44,6 @@ Z21::Z21() :
     command_handlers[0x40] = new LanX();
 }
 
-
 Z21::~Z21()
 {
     for (auto& item: command_handlers) {
@@ -52,13 +51,13 @@ Z21::~Z21()
     }
 }
 
-
 bool Z21::connect()
 {
     try
     {
+        BOOST_LOG_TRIVIAL(info) << "Connecting to Z21: host = " << host << ", port = " << port;
         udp::resolver resolver(io_context);
-        receiver_endpoint = *resolver.resolve(udp::v4(), "192.168.0.111", "21105").begin();
+        receiver_endpoint = *resolver.resolve(udp::v4(), host, port).begin();
         socket.open(udp::v4());
     }
     catch(std::exception& e)
@@ -69,7 +68,6 @@ bool Z21::connect()
 
     return true;
 }
-
 
 void Z21::listen()
 {
