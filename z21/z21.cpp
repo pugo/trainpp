@@ -46,6 +46,8 @@ Z21::Z21(const std::string& z21_host, const std::string& z21_port) :
 
 Z21::~Z21()
 {
+    listen_thread.join();
+
     for (auto& item: command_handlers) {
         delete item.second;
     }
@@ -63,6 +65,7 @@ bool Z21::connect()
     catch(std::exception& e)
     {
         std::cout <<  e.what() << std::endl;
+        return true;
         return false;
     }
 
@@ -71,19 +74,25 @@ bool Z21::connect()
 
 void Z21::listen()
 {
+    listen_thread = std::thread(&Z21::listen_thread_fn, this);
+}
+
+void Z21::listen_thread_fn()
+{
+    BOOST_LOG_TRIVIAL(debug) << "Running Z21 listener thread";
     try
     {
         socket.send_to(boost::asio::buffer(LanGetSerialNumber().pack()), receiver_endpoint);
 
         socket.async_receive_from(boost::asio::buffer(recv_buf), receiver_endpoint,
-                boost::bind(&Z21::handle_receive, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+                                  boost::bind(&Z21::handle_receive, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
     }
     catch (std::exception& e)
     {
         std::cerr << e.what() << std::endl;
     }
 
-   io_context.run();
+    io_context.run();
 }
 
 
@@ -116,46 +125,6 @@ void Z21::handle_receive(const boost::system::error_code& error, std::size_t byt
             handle_dataset(size, id, data);
             pos += size;
         }
-    }
-
-    if (!sent_get_system_state) {
-        socket.send_to(boost::asio::buffer(LanSystemstateGetData().pack()), receiver_endpoint);
-        sent_get_system_state = true;
-    }
-    else if (!sent_get_hw_info) {
-        socket.send_to(boost::asio::buffer(LanGetHWInfo().pack()), receiver_endpoint);
-        sent_get_hw_info = true;
-    }
-    else if (!sent_set_bc_flags) {
-        LanSetBroadcastFlags sbf(BroadcastFlags::DRIVING_AND_SWITCHING | BroadcastFlags::Z21_STATUS_CHANGES);
-        socket.send_to(boost::asio::buffer(sbf.pack()), receiver_endpoint);
-        socket.send_to(boost::asio::buffer(LanGetBroadcastFlags().pack()), receiver_endpoint);
-
-        LanX_GetLocoInfo xgli(10);
-        socket.send_to(boost::asio::buffer(LanX(&xgli).pack()), receiver_endpoint);
-
-        sent_set_bc_flags = true;
-    }
-    else if (!sent_lan_get_code) {
-        socket.send_to(boost::asio::buffer(LanGetCode().pack()), receiver_endpoint);
-        socket.send_to(boost::asio::buffer(LanGetLocomode(0x0001).pack()), receiver_endpoint);
-
-//        LanX_SetLocoDrive xsld(10, 24, true);
-//        socket.send_to(boost::asio::buffer(LanX(&xsld).pack()), receiver_endpoint);
-//
-//        LanX_SetLocoFunction xslf(10, 0x80);
-//        socket.send_to(boost::asio::buffer(LanX(&xslf).pack()), receiver_endpoint);
-//
-//        LanX_CvRead drr(1);
-//        socket.send_to(boost::asio::buffer(LanX(&drr).pack()), receiver_endpoint);
-
-        sent_lan_get_code = true;
-    }
-    else if (!sent_set_cv) {
-        sleep(2);
-        LanX_SetTrackPowerOn stpo;
-        socket.send_to(boost::asio::buffer(LanX(&stpo).pack()), receiver_endpoint);
-        sent_set_cv = true;
     }
 
     socket.async_receive_from(

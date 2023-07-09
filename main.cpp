@@ -61,5 +61,46 @@ int main(int argc, char* argv[])
     z21.connect();
     z21.listen();
 
+    bool sent_get_hw_info = false;
+    bool sent_set_bc_flags = false;
+    bool sent_get_system_state = false;
+    bool sent_lan_get_code = false;
+    bool sent_set_cv = false;
+
+    while (true) {
+        BOOST_LOG_TRIVIAL(debug) << "tick..";
+        sleep(1);
+
+        if (!sent_get_system_state) {
+//            socket.send_to(boost::asio::buffer(LanSystemstateGetData().pack()), receiver_endpoint);
+            sent_get_system_state = true;
+        }
+        else if (!sent_get_hw_info) {
+//            socket.send_to(boost::asio::buffer(LanGetHWInfo().pack()), receiver_endpoint);
+            sent_get_hw_info = true;
+        }
+        else if (!sent_set_bc_flags) {
+//            LanSetBroadcastFlags sbf(BroadcastFlags::DRIVING_AND_SWITCHING | BroadcastFlags::Z21_STATUS_CHANGES);
+//            socket.send_to(boost::asio::buffer(sbf.pack()), receiver_endpoint);
+//            socket.send_to(boost::asio::buffer(LanGetBroadcastFlags().pack()), receiver_endpoint);
+
+//            LanX_GetLocoInfo xgli(10);
+//            socket.send_to(boost::asio::buffer(LanX(&xgli).pack()), receiver_endpoint);
+
+            sent_set_bc_flags = true;
+        }
+        else if (!sent_lan_get_code) {
+//            socket.send_to(boost::asio::buffer(LanGetCode().pack()), receiver_endpoint);
+//            socket.send_to(boost::asio::buffer(LanGetLocomode(0x0001).pack()), receiver_endpoint);
+
+            sent_lan_get_code = true;
+        }
+        else if (!sent_set_cv) {
+//            LanX_SetTrackPowerOn stpo;
+//            socket.send_to(boost::asio::buffer(LanX(&stpo).pack()), receiver_endpoint);
+            sent_set_cv = true;
+        }
+    }
+
     return 0;
 }

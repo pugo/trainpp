@@ -42,26 +42,22 @@ public:
     void handle_dataset(uint16_t size, uint16_t id, std::vector<uint8_t>& data);
 
     uint32_t serial_number() const { return m_serial_number; }
-
     uint32_t hw_type() const { return m_hw_type; }
     const std::string& fw_version() const { return m_fw_version; }
 
 private:
+    void listen_thread_fn();
+
     const std::string host;
     const std::string port;
 
+    std::thread listen_thread;
     std::vector<uint8_t> recv_buf;
     std::map<uint16_t, Z21_DataSet*> command_handlers;
 
     boost::asio::io_context io_context;
     boost::asio::ip::udp::endpoint receiver_endpoint;
     boost::asio::ip::udp::socket socket;
-
-    bool sent_get_hw_info{false};
-    bool sent_set_bc_flags{false};
-    bool sent_get_system_state{false};
-    bool sent_lan_get_code{false};
-    bool sent_set_cv{false};
 
     uint32_t m_serial_number{0};
 
