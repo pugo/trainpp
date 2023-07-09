@@ -34,14 +34,14 @@ Z21::Z21() :
 {
     recv_buf.resize(128);
 
-    command_handlers[0x10] = new LanGetSerialNumber();
-    command_handlers[0x18] = new LanGetCode();
-    command_handlers[0x1a] = new LanGetHWInfo();
+    command_handlers[Z21_DataSet::LAN_GET_SERIAL_NUMBER] = new LanGetSerialNumber();
+    command_handlers[Z21_DataSet::LAN_GET_CODE] = new LanGetCode();
+    command_handlers[Z21_DataSet::LAN_GET_HWINFO] = new LanGetHWInfo();
+    command_handlers[Z21_DataSet::LAN_GET_BROADCASTFLAGS] = new LanGetBroadcastFlags();
+    command_handlers[Z21_DataSet::LAN_GET_LOCOMODE] = new LanGetLocomode();
+    command_handlers[Z21_DataSet::LAN_GET_TURNOUTMODE] = new LanGetTurnoutmode();
+    command_handlers[Z21_DataSet::LAN_SYSTEMSTATE_DATACHANGED] = new LanSystemstateDatachanged();
     command_handlers[0x40] = new LanX();
-    command_handlers[0x51] = new LanGetBroadcastFlags();
-    command_handlers[0x60] = new LanGetLocomode();
-    command_handlers[0x70] = new LanGetTurnoutmode();
-    command_handlers[0x84] = new LanSystemstateDatachanged();
 }
 
 
@@ -167,7 +167,7 @@ void Z21::handle_receive(const boost::system::error_code& error, std::size_t byt
                         boost::asio::placeholders::bytes_transferred));
 }
 
-
+// Handlers for all received DataSets and commands.
 void Z21::handle_dataset(uint16_t size, uint16_t id, std::vector<uint8_t>& data)
 {
     BOOST_LOG_TRIVIAL(debug) << "Received for ID " << std::hex << (int)id << ": " << PRINT_HEX(data);

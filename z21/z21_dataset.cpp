@@ -46,7 +46,6 @@ std::vector<uint8_t> Z21_DataSet::pack()
     return result;
 }
 
-
 // LAN_GET_SERIAL_NUMBER (0x10)
 void LanGetSerialNumber::unpack(std::vector<uint8_t> &data)
 {
@@ -56,7 +55,6 @@ void LanGetSerialNumber::unpack(std::vector<uint8_t> &data)
     }
 }
 
-
 // LAN_GET_CODE (0x18)
 void LanGetCode::unpack(std::vector<uint8_t> &data)
 {
@@ -65,7 +63,6 @@ void LanGetCode::unpack(std::vector<uint8_t> &data)
         code = data[0];
     }
 }
-
 
 // LAN_GET_HWINFO (0x1a)
 void LanGetHWInfo::unpack(std::vector<uint8_t> &data)
@@ -92,7 +89,6 @@ void LanGetHWInfo::unpack(std::vector<uint8_t> &data)
     }
 }
 
-
 // LAN_SET_BROADCASTFLAGS (0x50)
 std::vector<uint8_t> LanSetBroadcastFlags::pack_data()
 {
@@ -105,13 +101,11 @@ std::vector<uint8_t> LanSetBroadcastFlags::pack_data()
     return result;
 }
 
-
 // LAN_GET_BROADCASTFLAGS (0x51)
 void LanGetBroadcastFlags::unpack(std::vector<uint8_t> &data)
 {
     BOOST_LOG_TRIVIAL(debug) << "LanGetBroadcastFlags::unpack(): " << PRINT_HEX(data);
 }
-
 
 // LAN_GET_LOCOMODE (0x60)
 std::vector<uint8_t> LanGetLocomode::pack_data()
@@ -129,7 +123,6 @@ void LanGetLocomode::unpack(std::vector<uint8_t> &data)
     mode = static_cast<Locomode>(data[2]);
 }
 
-
 // LAN_SET_LOCOMODE (0x61)
 std::vector<uint8_t> LanSetLocomode::pack_data()
 {
@@ -141,7 +134,6 @@ std::vector<uint8_t> LanSetLocomode::pack_data()
     BOOST_LOG_TRIVIAL(debug) << "LanSetLocomode::pack_data(): " << PRINT_HEX(result);
     return result;
 }
-
 
 // LAN_SYSTEMSTATE_DATACHANGED (0x84)
 void LanSystemstateDatachanged::unpack(std::vector<uint8_t> &data)
