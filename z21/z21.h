@@ -26,6 +26,56 @@
 
 class Z21_DataSet;
 
+
+enum Z21FeatureSet
+{
+    UNKNOWN = 0xff,
+    Z21_NO_LOCK = 0x00,
+    Z21_START_LOCKED = 0x01,
+    Z21_START_UNLOCKED = 0x02,
+};
+
+
+struct Z21Id
+{
+    uint32_t serial_number{0};
+    uint32_t hw_type{0};
+    std::string fw_version{};
+    Z21FeatureSet feature_set{Z21FeatureSet::UNKNOWN};
+};
+
+struct TrackStatus
+{
+    int16_t main_current{0};
+    int16_t prog_current{0};
+    int16_t filtered_main_current{0};
+    uint16_t supply_voltage{0};
+    uint16_t vcc_voltage{0};
+};
+
+struct Mode
+{
+    bool emergency_stop{false};
+    bool track_voltage_off{false};
+    bool short_cirtcuit{false};
+    bool programming_mode{false};
+};
+
+struct Z21Status
+{
+    Z21Id id;
+    TrackStatus track;
+
+    int16_t temperature{0};
+
+    uint8_t central_state{0};
+    uint8_t central_state_ex{0};
+    uint8_t capabilities{0};
+
+    Mode  mode;
+};
+
+
 /**
  * Represents an instance of a Roco Z21.
  */
@@ -41,9 +91,20 @@ public:
     void handle_receive(const boost::system::error_code& error, std::size_t bytes_transferred);
     void handle_dataset(uint16_t size, uint16_t id, std::vector<uint8_t>& data);
 
-    uint32_t serial_number() const { return m_serial_number; }
-    uint32_t hw_type() const { return m_hw_type; }
-    const std::string& fw_version() const { return m_fw_version; }
+    Z21Status& z21_status() { return m_z21_status; }
+
+    void request_system_state();
+    void get_hardware_info();
+    void get_broadcast_flags();
+    void set_broadcast_flags();
+
+    void get_loco_info(uint16_t address);
+
+    void get_feature_set();
+    void get_loco_control_standard(uint16_t address);
+
+    void set_track_power_on();
+    void set_track_power_off();
 
 private:
     void listen_thread_fn();
@@ -59,27 +120,7 @@ private:
     boost::asio::ip::udp::endpoint receiver_endpoint;
     boost::asio::ip::udp::socket socket;
 
-    uint32_t m_serial_number{0};
-
-    uint32_t m_hw_type{0};
-    std::string m_fw_version{};
-
-    int16_t m_main_current{0};
-    int16_t m_prog_current{0};
-    int16_t m_filtered_main_current{0};
-    int16_t m_temperature{0};
-
-    uint16_t m_supply_voltage{0};
-    uint16_t m_vcc_voltage{0};
-
-    uint8_t m_central_state{0};
-    uint8_t m_central_state_ex{0};
-    uint8_t m_capabilities{0};
-
-    bool emergency_stop{false};
-    bool track_voltage_off{false};
-    bool short_cirtcuit{false};
-    bool programming_mode{false};
+    Z21Status m_z21_status;
 };
 
 

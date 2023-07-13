@@ -71,7 +71,6 @@ protected:
     }
 };
 
-
 enum BroadcastFlags
 {
     DRIVING_AND_SWITCHING = 0x1,
@@ -79,7 +78,6 @@ enum BroadcastFlags
     RAILCOM_LOCO_CHANGES = 0x4,
     Z21_STATUS_CHANGES = 0x100,
 };
-
 
 // LAN_GET_SERIAL_NUMBER (0x10)
 class LanGetSerialNumber : public Z21_DataSet
@@ -92,7 +90,6 @@ public:
     uint32_t serial_number;
 };
 
-
 // LAN_GET_CODE (0x18)
 class LanGetCode : public Z21_DataSet
 {
@@ -103,7 +100,6 @@ public:
 
     uint8_t code{0};
 };
-
 
 // LAN_GET_HWINFO (0x1a)
 class LanGetHWInfo : public Z21_DataSet
@@ -116,7 +112,6 @@ public:
     uint32_t hw_type;
     std::string fw_version;
 };
-
 
 // LAN_X (0x40)
 class LanX : public Z21_DataSet
@@ -140,7 +135,6 @@ private:
     LanX_Packet* m_command{nullptr};
 };
 
-
 // LAN_SET_BROADCASTFLAGS (0x50)
 class LanSetBroadcastFlags : public Z21_DataSet
 {
@@ -153,7 +147,6 @@ private:
     uint32_t m_flags;
 };
 
-
 // LAN_GET_BROADCASTFLAGS (0x51)
 class LanGetBroadcastFlags : public Z21_DataSet
 {
@@ -165,13 +158,11 @@ public:
 private:
 };
 
-
 enum class Locomode : uint8_t {
     UNKNOWN = 255,
     DCC = 0,
     MM = 1
 };
-
 
 // LAN_GET_LOCOMODE (0x60)
 class LanGetLocomode : public Z21_DataSet
@@ -189,7 +180,6 @@ protected:
     virtual std::vector<uint8_t> pack_data();
 };
 
-
 // LAN_SET_LOCOMODE (0x61)
 class LanSetLocomode : public Z21_DataSet
 {
@@ -205,7 +195,6 @@ private:
     Locomode m_mode;
 };
 
-
 // LAN_GET_TURNOUTMODE (0x70)
 class LanGetTurnoutmode : public LanGetLocomode
 {
@@ -214,7 +203,6 @@ public:
     { m_id = LAN_GET_TURNOUTMODE; }
 };
 
-
 // LAN_SET_TURNOUTMODE (0x71)
 class LanSetTurnoutmode : public LanSetLocomode
 {
@@ -222,7 +210,6 @@ public:
     LanSetTurnoutmode(uint16_t address, Locomode mode) : LanSetLocomode(address, mode)
     { m_id = LAN_SET_TURNOUTMODE; }
 };
-
 
 // LAN_SYSTEMSTATE_DATACHANGED (0x84)
 class LanSystemstateDatachanged : public Z21_DataSet
@@ -249,7 +236,6 @@ public:
     bool short_cirtcuit{false};
     bool programming_mode{false};
 };
-
 
 // LAN_SYSTEMSTATE_GETDATA (0x85)
 class LanSystemstateGetData : public Z21_DataSet

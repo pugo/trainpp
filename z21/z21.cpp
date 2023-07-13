@@ -145,15 +145,16 @@ void Z21::handle_dataset(uint16_t size, uint16_t id, std::vector<uint8_t>& data)
         switch(id)
         {
             case 0x10:
-                m_serial_number = static_cast<LanGetSerialNumber*>(dataset)->serial_number;
+                m_z21_status.id.serial_number = static_cast<LanGetSerialNumber*>(dataset)->serial_number;
                 break;
             case 0x18: {
                 uint8_t code = static_cast<LanGetCode*>(dataset)->code;
-                BOOST_LOG_TRIVIAL(debug) << " ---> LAN_GET_CODE: " << (int) code;
+                m_z21_status.id.feature_set = static_cast<Z21FeatureSet>(code);
+                BOOST_LOG_TRIVIAL(debug) << " ---> LAN_GET_CODE: " << (int) m_z21_status.id.feature_set;
             } break;
             case 0x1a:
-                m_hw_type = static_cast<LanGetHWInfo*>(dataset)->hw_type;
-                m_fw_version = static_cast<LanGetHWInfo*>(dataset)->fw_version;
+                m_z21_status.id.hw_type = static_cast<LanGetHWInfo*>(dataset)->hw_type;
+                m_z21_status.id.fw_version = static_cast<LanGetHWInfo*>(dataset)->fw_version;
                 break;
             case 0x40: {
                 LanX* lanx = static_cast<LanX*>(dataset);
@@ -222,20 +223,20 @@ void Z21::handle_dataset(uint16_t size, uint16_t id, std::vector<uint8_t>& data)
             } break;
             case 0x84: {
                 LanSystemstateDatachanged* ss = static_cast<LanSystemstateDatachanged*>(dataset);
-                m_main_current = ss->main_current;
-                m_prog_current = ss->prog_current;
-                m_filtered_main_current = ss->filtered_main_current;
-                m_temperature = ss->temperature;
-                m_supply_voltage = ss->supply_voltage;
-                m_vcc_voltage = ss->vcc_voltage;
-                m_central_state = ss->central_state;
-                m_central_state_ex = ss->central_state_ex;
-                m_capabilities = ss->capabilities;
+                m_z21_status.track.main_current = ss->main_current;
+                m_z21_status.track.prog_current = ss->prog_current;
+                m_z21_status.track.filtered_main_current = ss->filtered_main_current;
+                m_z21_status.track.supply_voltage = ss->supply_voltage;
+                m_z21_status.track.vcc_voltage = ss->vcc_voltage;
+                m_z21_status.temperature = ss->temperature;
+                m_z21_status.central_state = ss->central_state;
+                m_z21_status.central_state_ex = ss->central_state_ex;
+                m_z21_status.capabilities = ss->capabilities;
 
-                emergency_stop = ss->emergency_stop;
-                track_voltage_off = ss->track_voltage_off;
-                short_cirtcuit = ss->short_cirtcuit;
-                programming_mode = ss->programming_mode;
+                m_z21_status.mode.emergency_stop = ss->emergency_stop;
+                m_z21_status.mode.track_voltage_off = ss->track_voltage_off;
+                m_z21_status.mode.short_cirtcuit = ss->short_cirtcuit;
+                m_z21_status.mode.programming_mode = ss->programming_mode;
 
             }   break;
             default:
@@ -244,3 +245,51 @@ void Z21::handle_dataset(uint16_t size, uint16_t id, std::vector<uint8_t>& data)
     }
 }
 
+void Z21::request_system_state()
+{
+    socket.send_to(boost::asio::buffer(LanSystemstateGetData().pack()), receiver_endpoint);
+}
+
+void Z21::get_hardware_info()
+{
+    socket.send_to(boost::asio::buffer(LanGetHWInfo().pack()), receiver_endpoint);
+}
+
+void Z21::get_broadcast_flags()
+{
+    socket.send_to(boost::asio::buffer(LanGetBroadcastFlags().pack()), receiver_endpoint);
+}
+
+void Z21::set_broadcast_flags()
+{
+    LanSetBroadcastFlags sbf(BroadcastFlags::DRIVING_AND_SWITCHING | BroadcastFlags::Z21_STATUS_CHANGES);
+    socket.send_to(boost::asio::buffer(sbf.pack()), receiver_endpoint);
+}
+
+void Z21::get_loco_info(uint16_t address)
+{
+    LanX_GetLocoInfo xgli(address);
+    socket.send_to(boost::asio::buffer(LanX(&xgli).pack()), receiver_endpoint);
+}
+
+void Z21::get_feature_set()
+{
+    socket.send_to(boost::asio::buffer(LanGetCode().pack()), receiver_endpoint);
+}
+
+void Z21::get_loco_control_standard(uint16_t address)
+{
+    socket.send_to(boost::asio::buffer(LanGetLocomode(address).pack()), receiver_endpoint);
+}
+
+void Z21::set_track_power_on()
+{
+    LanX_SetTrackPowerOn stpo;
+    socket.send_to(boost::asio::buffer(LanX(&stpo).pack()), receiver_endpoint);
+}
+
+void Z21::set_track_power_off()
+{
+    LanX_SetTrackPowerOff stpo;
+    socket.send_to(boost::asio::buffer(LanX(&stpo).pack()), receiver_endpoint);
+}
