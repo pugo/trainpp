@@ -68,4 +68,25 @@ TEST_F(Z21DataSetTest, LanGetCode)
     ASSERT_EQ(packet.code, 0x42);
 }
 
+TEST_F(Z21DataSetTest, LanGetHWInfo)
+{
+    LanGetHWInfo packet;
 
+    std::vector<uint8_t> request_expected = {0x04, 0x00, 0x1a, 0x00};
+    std::vector<uint8_t> request = packet.pack();
+    ASSERT_EQ(request, request_expected);
+
+    std::vector<uint8_t> response = {0x04, 0x02, 0x00, 0x00, 0x20, 0x01, 0x00, 0x00};
+    packet.unpack(response);
+    ASSERT_EQ(packet.hw_type, 0x204);
+    ASSERT_EQ(packet.fw_version, "1.20");
+}
+
+TEST_F(Z21DataSetTest, LanLogoff)
+{
+    LanLogoff packet;
+
+    std::vector<uint8_t> request_expected = {0x04, 0x00, 0x30, 0x00};
+    std::vector<uint8_t> request = packet.pack();
+    ASSERT_EQ(request, request_expected);
+}

@@ -23,8 +23,6 @@
 #include <boost/bind.hpp>
 
 #include "z21.h"
-#include "z21_dataset.h"
-#include "lan_x_command.h"
 
 using boost::asio::ip::udp;
 
@@ -245,9 +243,14 @@ void Z21::handle_dataset(uint16_t size, uint16_t id, std::vector<uint8_t>& data)
     }
 }
 
-void Z21::request_system_state()
+void Z21::get_serial_number()
 {
-    socket.send_to(boost::asio::buffer(LanSystemstateGetData().pack()), receiver_endpoint);
+    socket.send_to(boost::asio::buffer(LanGetSerialNumber().pack()), receiver_endpoint);
+}
+
+void Z21::get_feature_set()
+{
+    socket.send_to(boost::asio::buffer(LanGetCode().pack()), receiver_endpoint);
 }
 
 void Z21::get_hardware_info()
@@ -255,9 +258,165 @@ void Z21::get_hardware_info()
     socket.send_to(boost::asio::buffer(LanGetHWInfo().pack()), receiver_endpoint);
 }
 
-void Z21::get_broadcast_flags()
+void Z21::logoff()
 {
-    socket.send_to(boost::asio::buffer(LanGetBroadcastFlags().pack()), receiver_endpoint);
+    socket.send_to(boost::asio::buffer(LanLogoff().pack()), receiver_endpoint);
+}
+
+void Z21::xbus_get_version()
+{
+    LanX_GetVersion lanx_command;
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_get_status()
+{
+    LanX_GetStatus lanx_command;
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_set_track_power_off()
+{
+    LanX_SetTrackPowerOff lanx_command;
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_set_track_power_on()
+{
+    LanX_SetTrackPowerOn lanx_command;
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_dcc_read_register(uint8_t reg)
+{
+    LanX_DccReadRegister lanx_command(reg);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_cv_read(uint16_t cv)
+{
+    LanX_CvRead lanx_command(cv);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_dcc_write_register(uint8_t reg, uint8_t value)
+{
+    LanX_DccWriteRegister lanx_command(reg, value);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_cv_write(uint16_t cv, uint8_t value)
+{
+    LanX_CvWrite lanx_command(cv, value);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_mm_write_byte(uint8_t reg, uint8_t value)
+{
+    LanX_MmWriteByte lanx_command(reg, value);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_get_turnout_info(uint16_t address)
+{
+    LanX_GetTurnoutInfo lanx_command(address);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_get_ext_accessory_info(uint16_t address)
+{
+    LanX_GetExtAccessoryInfo lanx_command(address);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_set_turnout(uint16_t address, uint8_t value)
+{
+    LanX_SetTurnout lanx_command(address, value);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_set_ext_accessory(uint16_t address, uint8_t state)
+{
+    LanX_SetExtAccessory lanx_command(address, state);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_set_stop()
+{
+    LanX_SetStop lanx_command;
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_get_loco_info(uint16_t address)
+{
+    LanX_GetLocoInfo lanx_command(address);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_set_loco_drive(uint16_t address, uint8_t speed, bool forward)
+{
+    LanX_SetLocoDrive lanx_command(address, speed, forward);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_set_loco_function(uint16_t address, uint8_t function)
+{
+    LanX_SetLocoFunction lanx_command(address, function);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_set_loco_function_group(uint16_t address, LanX_SetLocoFunctionGroup::FunctionGroup group, uint8_t functions)
+{
+    LanX_SetLocoFunctionGroup lanx_command(address, group, functions);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_set_loco_binary_state(uint16_t address, bool on, uint8_t binary_address)
+{
+    LanX_SetLocoBinaryState lanx_command(address, on, binary_address);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_cv_pom_write_byte(uint16_t address, uint16_t cv, uint8_t value)
+{
+    LanX_CvPomWriteByte lanx_command(address, cv, value);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_cv_pom_write_bit(uint16_t address, uint16_t cv, uint8_t bit_position, uint8_t value)
+{
+    LanX_CvPomWriteBit lanx_command(address, cv, bit_position, value);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_cv_pom_read_byte(uint16_t address, uint16_t cv)
+{
+    LanX_CvPomReadByte lanx_command(address, cv);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_cv_pom_accessory_write_byte(uint16_t address, PomAccessorySelection selction, uint8_t output, uint16_t cv, uint8_t value)
+{
+    LanX_CvPomAccessoryWriteByte lanx_command(address, selction, output, cv, value);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_cv_pom_accessory_write_bit(uint16_t address, PomAccessorySelection selction, uint8_t output, uint16_t cv, uint8_t bit_position, uint8_t value)
+{
+    LanX_CvPomAccessoryWriteBit lanx_command(address, selction, output, cv, bit_position, value);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_cv_pom_accessory_read_byte(uint16_t address, PomAccessorySelection selction, uint8_t output, uint16_t cv)
+{
+    LanX_CvPomAccessoryReadByte lanx_command(address, selction, output, cv);
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
+}
+
+void Z21::xbus_get_firmware_version()
+{
+    LanX_GetFirmwareVersion lanx_command;
+    socket.send_to(boost::asio::buffer(LanX(&lanx_command).pack()), receiver_endpoint);
 }
 
 void Z21::set_broadcast_flags()
@@ -266,30 +425,34 @@ void Z21::set_broadcast_flags()
     socket.send_to(boost::asio::buffer(sbf.pack()), receiver_endpoint);
 }
 
-void Z21::get_loco_info(uint16_t address)
+void Z21::get_broadcast_flags()
 {
-    LanX_GetLocoInfo xgli(address);
-    socket.send_to(boost::asio::buffer(LanX(&xgli).pack()), receiver_endpoint);
+    socket.send_to(boost::asio::buffer(LanGetBroadcastFlags().pack()), receiver_endpoint);
 }
 
-void Z21::get_feature_set()
-{
-    socket.send_to(boost::asio::buffer(LanGetCode().pack()), receiver_endpoint);
-}
-
-void Z21::get_loco_control_standard(uint16_t address)
+void Z21::get_loco_mode(uint16_t address)
 {
     socket.send_to(boost::asio::buffer(LanGetLocomode(address).pack()), receiver_endpoint);
 }
 
-void Z21::set_track_power_on()
+void Z21::set_loco_mode(uint16_t address, Locomode mode)
 {
-    LanX_SetTrackPowerOn stpo;
-    socket.send_to(boost::asio::buffer(LanX(&stpo).pack()), receiver_endpoint);
+    socket.send_to(boost::asio::buffer(LanSetLocomode(address, mode).pack()), receiver_endpoint);
 }
 
-void Z21::set_track_power_off()
+void Z21::get_turnout_mode(uint16_t address)
 {
-    LanX_SetTrackPowerOff stpo;
-    socket.send_to(boost::asio::buffer(LanX(&stpo).pack()), receiver_endpoint);
+    socket.send_to(boost::asio::buffer(LanGetTurnoutmode(address).pack()), receiver_endpoint);
 }
+
+void Z21::set_turnout_mode(uint16_t address, Locomode mode)
+{
+    socket.send_to(boost::asio::buffer(LanSetTurnoutmode(address, mode).pack()), receiver_endpoint);
+}
+
+void Z21::systemstate_get_data()
+{
+    socket.send_to(boost::asio::buffer(LanSystemstateGetData().pack()), receiver_endpoint);
+}
+
+

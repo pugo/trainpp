@@ -24,6 +24,9 @@
 #include <boost/asio.hpp>
 #include <string>
 
+#include "z21_dataset.h"
+#include "lan_x_command.h"
+
 class Z21_DataSet;
 
 
@@ -93,18 +96,55 @@ public:
 
     Z21Status& z21_status() { return m_z21_status; }
 
-    void request_system_state();
-    void get_hardware_info();
-    void get_broadcast_flags();
-    void set_broadcast_flags();
+    void get_serial_number();                                           // LAN_GET_SERIAL_NUMBER
+    void get_feature_set();                                             // LAN_GET_CODE
+    void get_hardware_info();                                           // LAN_GET_HWINFO
+    void logoff();                                                      // LAN_LOGOFF
 
-    void get_loco_info(uint16_t address);
+    void xbus_get_version();                                            // LAN_X_GET_VERSION
+    void xbus_get_status();                                             // LAN_X_GET_STATUS
+    void xbus_set_track_power_off();                                    // LAN_X_SET_TRACK_POWER_OFF
+    void xbus_set_track_power_on();                                     // LAN_X_SET_TRACK_POWER_ON
 
-    void get_feature_set();
-    void get_loco_control_standard(uint16_t address);
+    void xbus_dcc_read_register(uint8_t reg);                           // LAN_X_DCC_READ_REGISTER
+    void xbus_cv_read(uint16_t cv);                                     // LAN_X_CV_READ
+    void xbus_dcc_write_register(uint8_t reg, uint8_t value);           // LAN_X_DCC_WRITE_REGISTER
+    void xbus_cv_write(uint16_t cv, uint8_t value);                     // LAN_X_CV_WRITE
+    void xbus_mm_write_byte(uint8_t reg, uint8_t value);                // LAN_X_MM_WRITE_BYTE
+    void xbus_get_turnout_info(uint16_t address);                       // LAN_X_GET_TURNOUT_INFO
+    void xbus_get_ext_accessory_info(uint16_t address);                 // LAN_X_GET_EXT_ACCESSORY_INFO
+    void xbus_set_turnout(uint16_t address, uint8_t value);             // LAN_X_SET_TURNOUT
+    void xbus_set_ext_accessory(uint16_t address, uint8_t state);       // LAN_X_SET_EXT_ACCESSORY
+    void xbus_set_stop();     // LAN_X_SET_STOP
 
-    void set_track_power_on();
-    void set_track_power_off();
+    void xbus_get_loco_info(uint16_t address);                                                                                  // LAN_X_GET_LOCO_INFO
+    void xbus_set_loco_drive(uint16_t address, uint8_t speed, bool forward);                                                    // LAN_X_SET_LOCO_DRIVE
+    void xbus_set_loco_function(uint16_t address, uint8_t function);                                                            // LAN_X_SET_LOCO_FUNCTION
+    void xbus_set_loco_function_group(uint16_t address, LanX_SetLocoFunctionGroup::FunctionGroup group, uint8_t functions);     // LAN_X_SET_LOCO_FUNCTION_GROUP
+    void xbus_set_loco_binary_state(uint16_t address, bool on, uint8_t binary_address);                                         // LAN_X_SET_LOCO_BINARY_STATE
+
+    void xbus_cv_pom_write_byte(uint16_t address, uint16_t cv, uint8_t value);                                                  // LAN_X_CV_POM_WRITE_BYTE
+    void xbus_cv_pom_write_bit(uint16_t address, uint16_t cv, uint8_t bit_position, uint8_t value);                             // LAN_X_CV_POM_WRITE_BIT
+    void xbus_cv_pom_read_byte(uint16_t address, uint16_t cv);                                                                  // LAN_X_CV_POM_READ_BYTE
+    void xbus_cv_pom_accessory_write_byte(uint16_t address, PomAccessorySelection selction, uint8_t output, uint16_t cv, uint8_t value);                                // LAN_X_CV_POM_ACCESSORY_WRITE_BYTE
+    void xbus_cv_pom_accessory_write_bit(uint16_t address, PomAccessorySelection selction, uint8_t output, uint16_t cv, uint8_t bit_position, uint8_t value);           // LAN_X_CV_POM_ACCESSORY_WRITE_BIT
+    void xbus_cv_pom_accessory_read_byte(uint16_t address, PomAccessorySelection selction, uint8_t output, uint16_t cv);        // LAN_X_CV_POM_ACCESSORY_READ_BYTE
+
+    void xbus_get_firmware_version();                                   // LAN_X_GET_FIRMWARE_VERSION
+
+    void set_broadcast_flags();                         // LAN_SET_BROADCASTFLAGS
+    void get_broadcast_flags();                         // LAN_GET_BROADCASTFLAGS
+
+    void get_loco_mode(uint16_t address);                         // LAN_GET_LOCOMODE
+    void set_loco_mode(uint16_t address, Locomode mode);                         // LAN_SET_LOCOMODE
+
+    void get_turnout_mode(uint16_t address);                         // LAN_GET_LOCOMODE
+    void set_turnout_mode(uint16_t address, Locomode mode);                         // LAN_SET_LOCOMODE
+
+    void systemstate_get_data();                        // LAN_SYSTEMSTATE_GETDATA
+
+
+
 
 private:
     void listen_thread_fn();

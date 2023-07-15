@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
         sleep(1);
 
         if (!sent_get_system_state) {
-            z21.request_system_state();
+            z21.systemstate_get_data();
             sent_get_system_state = true;
         }
         else if (!sent_get_hw_info) {
@@ -82,16 +82,16 @@ int main(int argc, char* argv[])
         else if (!sent_set_bc_flags) {
             z21.set_broadcast_flags();
             z21.get_broadcast_flags();
-            z21.get_loco_info(10);
+            z21.xbus_get_loco_info(10);
             sent_set_bc_flags = true;
         }
         else if (!sent_lan_get_code) {
             z21.get_feature_set();
-            z21.get_loco_control_standard(0x0001);
+            z21.get_loco_mode(0x0001);
             sent_lan_get_code = true;
         }
         else if (!sent_set_cv) {
-            z21.set_track_power_on();
+            z21.xbus_set_track_power_on();
             sent_set_cv = true;
         }
     }
