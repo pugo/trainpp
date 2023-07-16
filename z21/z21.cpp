@@ -142,84 +142,39 @@ void Z21::handle_dataset(uint16_t size, uint16_t id, std::vector<uint8_t>& data)
 
         switch(id)
         {
-            case 0x10:
+            case Z21_DataSet::DataSet::LAN_GET_SERIAL_NUMBER:
                 m_z21_status.id.serial_number = static_cast<LanGetSerialNumber*>(dataset)->serial_number;
                 break;
-            case 0x18: {
+            case Z21_DataSet::DataSet::LAN_GET_CODE: {
                 uint8_t code = static_cast<LanGetCode*>(dataset)->code;
                 m_z21_status.id.feature_set = static_cast<Z21FeatureSet>(code);
                 BOOST_LOG_TRIVIAL(debug) << " ---> LAN_GET_CODE: " << (int) m_z21_status.id.feature_set;
             } break;
-            case 0x1a:
+            case Z21_DataSet::DataSet::LAN_GET_HWINFO:
                 m_z21_status.id.hw_type = static_cast<LanGetHWInfo*>(dataset)->hw_type;
                 m_z21_status.id.fw_version = static_cast<LanGetHWInfo*>(dataset)->fw_version;
                 break;
-            case 0x40: {
+            case Z21_DataSet::DataSet::LAN_X: {
                 LanX* lanx = static_cast<LanX*>(dataset);
-                LanX_Packet* packet = lanx->command();
-                if (packet) {
-                    switch (packet->id)
-                    {
-                        case LanXCommands::LAN_X_TURNOUT_INFO:
-                            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_TURNOUT_INFO";
-                            break;
-                        case LanXCommands::LAN_X_EXT_ACCESSORY_INFO:
-                            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_EXT_ACCESSORY_INFO";
-                            break;
-                        case LanXCommands::LAN_X_BC_TRACK_POWER_OFF:
-                            BOOST_LOG_TRIVIAL(debug) << " ### Track power off";
-                            break;
-                        case LanXCommands::LAN_X_BC_TRACK_POWER_ON:
-                            BOOST_LOG_TRIVIAL(debug) << " ### Track power on";
-                            break;
-                        case LanXCommands::LAN_X_BC_PROGRAMMING_MODE:
-                            BOOST_LOG_TRIVIAL(debug) << " ### Programming mode";
-                            break;
-                        case LanXCommands::LAN_X_BC_TRACK_SHORT_CIRCUIT:
-                            BOOST_LOG_TRIVIAL(debug) << " ### Short circuit";
-                            break;
-                        case LanXCommands::LAN_X_CV_NACK_SC:
-                            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_CV_NACK_SC";
-                            break;
-                        case LanXCommands::LAN_X_CV_NACK:
-                            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_CV_NACK";
-                            break;
-                        case LanXCommands::LAN_X_UNKNOWN_COMMAND:
-                            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_UNKNOWN_COMMAND";
-                            break;
-                        case LanXCommands::LAN_X_STATUS_CHANGED:
-                            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_STATUS_CHANGED";
-                            break;
-                        case LanXCommands::LAN_X_GET_VERSION_RESPONSE:
-                            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_GET_VERSION_RESPONSE";
-                            break;
-                        case LanXCommands::LAN_X_CV_RESULT:
-                            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_CV_RESULT";
-                            break;
-                        case LanXCommands::LAN_X_BC_STOPPED:
-                            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_BC_STOPPED";
-                            break;
-                        case LanXCommands::LAN_X_LOCO_INFO:
-                            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_LOCO_INFO";
-                            break;
-                        case LanXCommands::LAN_X_GET_FIRMWARE_VERSION_RESPONSE:
-                            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_GET_FIRMWARE_VERSION_RESPONSE";
-                            break;
-                        default:
-                            break;
-                    }
+                LanX_Command* command = lanx->command();
+                if (command) {
+                    handle_lanx_command(command);
                 }
             }   break;
-            case 0x60: {
+            case Z21_DataSet::DataSet::LAN_GET_BROADCASTFLAGS: {
+                LanGetBroadcastFlags* bf = static_cast<LanGetBroadcastFlags*>(dataset);
+                BOOST_LOG_TRIVIAL(debug) << " ---> LAN_GET_BROADCASTFLAGS: " << std::hex << (int)bf->flags;
+            } break;
+            case Z21_DataSet::DataSet::LAN_GET_LOCOMODE: {
                 LanGetLocomode* lm = static_cast<LanGetLocomode*>(dataset);
                 BOOST_LOG_TRIVIAL(debug) << " ---> LAN_GET_LOCOMODE: " << std::hex << (int)lm->address << " = " <<
                                                                                     (lm->mode == Locomode::DCC ? "DCC" : "MM");
             } break;
-            case 0x70: {
+            case Z21_DataSet::DataSet::LAN_GET_TURNOUTMODE: {
                 LanGetTurnoutmode* lm = static_cast<LanGetTurnoutmode*>(dataset);
                 BOOST_LOG_TRIVIAL(debug) << " ---> LAN_GET_TURNOUTMODE: " << std::hex << (int)lm->address << " = " << (int)static_cast<uint8_t>(lm->mode);
             } break;
-            case 0x84: {
+            case Z21_DataSet::DataSet::LAN_SYSTEMSTATE_DATACHANGED: {
                 LanSystemstateDatachanged* ss = static_cast<LanSystemstateDatachanged*>(dataset);
                 m_z21_status.track.main_current = ss->main_current;
                 m_z21_status.track.prog_current = ss->prog_current;
@@ -240,6 +195,61 @@ void Z21::handle_dataset(uint16_t size, uint16_t id, std::vector<uint8_t>& data)
             default:
                 break;
         }
+    }
+}
+
+void Z21::handle_lanx_command(LanX_Command* command)
+{
+    switch (command->id)
+    {
+        case LanXCommands::LAN_X_TURNOUT_INFO:
+            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_TURNOUT_INFO";
+            break;
+        case LanXCommands::LAN_X_EXT_ACCESSORY_INFO:
+            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_EXT_ACCESSORY_INFO";
+            break;
+        case LanXCommands::LAN_X_BC_TRACK_POWER_OFF:
+            m_z21_status.mode.track_voltage_off = true;
+            break;
+        case LanXCommands::LAN_X_BC_TRACK_POWER_ON:
+            m_z21_status.mode.track_voltage_off = false;
+            break;
+        case LanXCommands::LAN_X_BC_PROGRAMMING_MODE:
+            m_z21_status.mode.programming_mode = true;
+            break;
+        case LanXCommands::LAN_X_BC_TRACK_SHORT_CIRCUIT:
+            m_z21_status.mode.short_cirtcuit = true;
+            break;
+        case LanXCommands::LAN_X_CV_NACK_SC:
+            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_CV_NACK_SC";
+            break;
+        case LanXCommands::LAN_X_CV_NACK:
+            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_CV_NACK";
+            break;
+        case LanXCommands::LAN_X_UNKNOWN_COMMAND:
+            m_z21_status.mode.invalid_request = true;
+            break;
+        case LanXCommands::LAN_X_STATUS_CHANGED:
+            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_STATUS_CHANGED";
+            break;
+        case LanXCommands::LAN_X_GET_VERSION_RESPONSE:
+            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_GET_VERSION_RESPONSE";
+            break;
+        case LanXCommands::LAN_X_CV_RESULT:
+            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_CV_RESULT";
+            break;
+        case LanXCommands::LAN_X_BC_STOPPED:
+            m_z21_status.mode.emergency_stop = true;
+            break;
+        case LanXCommands::LAN_X_LOCO_INFO:
+            BOOST_LOG_TRIVIAL(debug) << " ### LAN_X_LOCO_INFO";
+            break;
+        case LanXCommands::LAN_X_GET_FIRMWARE_VERSION_RESPONSE: {
+            LanX_GetFirmwareVersionResponse* lanx_command = static_cast<LanX_GetFirmwareVersionResponse*>(command);
+            m_z21_status.id.fw_version = lanx_command->fw_version;
+        } break;
+        default:
+            break;
     }
 }
 

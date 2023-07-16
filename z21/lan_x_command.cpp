@@ -502,7 +502,6 @@ void LanX_LocoInfo::unpack(std::vector<uint8_t>& data)
                              << ", speed = " << (int)speed << ", light = " << functions[0];
 }
 
-
 // LAN_X_CV_RESULT
 void LanX_CvResult::unpack(std::vector<uint8_t>& data)
 {
@@ -512,3 +511,8 @@ void LanX_CvResult::unpack(std::vector<uint8_t>& data)
     BOOST_LOG_TRIVIAL(debug) << "!!! LanX_CvResult::unpack(): " << (int)cv << " = " << (int)value;
 }
 
+// LAN_X_GET_FIRMWARE_VERSION_RESPONSE
+void LanX_GetFirmwareVersionResponse::unpack(std::vector<uint8_t>& data)
+{
+    fw_version = decode_bcd_version(std::vector<uint8_t>(data.begin() + 2, data.begin() + 4), false);
+}

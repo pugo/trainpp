@@ -62,6 +62,7 @@ struct Mode
     bool track_voltage_off{false};
     bool short_cirtcuit{false};
     bool programming_mode{false};
+    bool invalid_request{false};
 };
 
 struct Z21Status
@@ -88,12 +89,22 @@ public:
     Z21(const std::string& z21_host, const std::string& z21_port);
     ~Z21();
 
+    /**
+     * Connect to X21.
+     * @return true on success
+     */
     bool connect();
+
+    /**
+     * Start listening for Z21 datasets (in separate thread).
+     */
     void listen();
 
-    void handle_receive(const boost::system::error_code& error, std::size_t bytes_transferred);
-    void handle_dataset(uint16_t size, uint16_t id, std::vector<uint8_t>& data);
 
+    /**
+     * Get a struct with all current Z21 information.
+     * @return struct with all current Z21 information
+     */
     Z21Status& z21_status() { return m_z21_status; }
 
 
@@ -341,7 +352,31 @@ public:
     void systemstate_get_data();
 
 private:
+    /**
+     * Listening thread function.
+     */
     void listen_thread_fn();
+
+    /**
+     * Handle received data (from listening thread).
+     * @param error possible error code
+     * @param bytes_transferred number of bytes received
+     */
+    void handle_receive(const boost::system::error_code& error, std::size_t bytes_transferred);
+
+    /**
+     * Handle received dataset (from listening thread).
+     * @param size size of dataset
+     * @param id ID of dataset
+     * @param data dataset data
+     */
+    void handle_dataset(uint16_t size, uint16_t id, std::vector<uint8_t>& data);
+
+    /**
+     * Handle received XBus command (from listening thread).
+     * @param command XBus command to handle
+     */
+    void handle_lanx_command(LanX_Command* command);
 
     const std::string host;
     const std::string port;

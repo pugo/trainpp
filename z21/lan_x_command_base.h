@@ -77,14 +77,16 @@ enum class LanXCommands
     LAN_X_GET_FIRMWARE_VERSION_RESPONSE
 };
 
+std::string decode_bcd_version(std::vector<uint8_t> data, bool little_endian);
+
 
 /**
  * Base class for all LanX packets embedded in Z21 DataSets (commands).
  */
-class LanX_Packet
+class LanX_Command
 {
 public:
-    LanX_Packet(LanXCommands id) : id(id) {}
+    LanX_Command(LanXCommands id) : id(id) {}
 
     virtual std::vector<uint8_t> pack() {
         std::vector<uint8_t> result;

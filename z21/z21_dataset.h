@@ -26,7 +26,7 @@
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/format.hpp>
 
-#include "lan_x_packet.h"
+#include "lan_x_command_base.h"
 
 using boost::adaptors::transformed;
 
@@ -123,9 +123,10 @@ class LanX : public Z21_DataSet
 {
 public:
     LanX();
-    LanX(LanX_Packet* command);
+    LanX(LanX_Command* command);
+    virtual ~LanX();
     virtual void unpack(std::vector<uint8_t>& data);
-    LanX_Packet* command() { return m_command; }
+    LanX_Command* command() { return m_command; }
 
 protected:
     virtual std::vector<uint8_t> pack_data();
@@ -133,8 +134,8 @@ protected:
 private:
     bool check_checksum(std::vector<uint8_t>& data);
 
-    std::map<LanXCommands, LanX_Packet*> command_handlers;
-    LanX_Packet* m_command{nullptr};
+    std::map<LanXCommands, LanX_Command*> command_handlers;
+    LanX_Command* m_command{nullptr};
 };
 
 // LAN_SET_BROADCASTFLAGS (0x50)
@@ -153,6 +154,7 @@ class LanGetBroadcastFlags : public Z21_DataSet
 public:
     LanGetBroadcastFlags() { m_id = LAN_GET_BROADCASTFLAGS; }
     virtual void unpack(std::vector<uint8_t>& data);
+    uint32_t flags{0};
 };
 
 enum class Locomode : uint8_t {

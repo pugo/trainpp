@@ -50,7 +50,6 @@ std::vector<uint8_t> Z21_DataSet::pack()
 // LAN_GET_SERIAL_NUMBER (0x10)
 void LanGetSerialNumber::unpack(std::vector<uint8_t> &data)
 {
-    BOOST_LOG_TRIVIAL(debug) << "LanGetSerialNumber::unpack(): " << PRINT_HEX(data);
     if (data.size() == 4) {
         serial_number = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24);
     }
@@ -59,7 +58,6 @@ void LanGetSerialNumber::unpack(std::vector<uint8_t> &data)
 // LAN_GET_CODE (0x18)
 void LanGetCode::unpack(std::vector<uint8_t> &data)
 {
-    BOOST_LOG_TRIVIAL(debug) << "LanGetCode::unpack(): " << PRINT_HEX(data);
     if (data.size() == 1) {
         code = data[0];
     }
@@ -68,25 +66,9 @@ void LanGetCode::unpack(std::vector<uint8_t> &data)
 // LAN_GET_HWINFO (0x1a)
 void LanGetHWInfo::unpack(std::vector<uint8_t> &data)
 {
-    BOOST_LOG_TRIVIAL(debug) << "LanGetHWInfo::unpack(): " << PRINT_HEX(data);
     if (data.size() == 8) {
         hw_type = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24);
-
-        bool got_value = false;
-        std::vector<std::string> result;
-
-        for(size_t i = 4; i > 0; i--) {
-            uint8_t v = data[4 + i - 1];
-            if (! got_value && v == 0) { continue; }
-
-            uint8_t value = 0;
-            value += v & 0x0f;
-            value += (v >> 4) * 10;
-            result.push_back(std::to_string(value));
-        }
-
-        fw_version = std::accumulate(result.begin() + 1, result.end(), result[0],
-                                        [](const std::string& a, const std::string& b) { return a + '.' + b; });
+        fw_version = decode_bcd_version(std::vector<uint8_t>(data.begin() + 4, data.begin() + 8), true);
     }
 }
 
@@ -114,25 +96,28 @@ LanX::LanX()
     command_handlers[LanXCommands::LAN_X_GET_FIRMWARE_VERSION_RESPONSE] = new LanX_GetFirmwareVersionResponse();
 }
 
-LanX::LanX(LanX_Packet* command) :
+LanX::LanX(LanX_Command* command) :
         m_command(command)
 {
     m_id = LAN_X;
 }
 
+LanX::~LanX()
+{
+    for (auto& item: command_handlers) {
+        delete item.second;
+    }
+}
+
 void LanX::unpack(std::vector<uint8_t>& data)
 {
-    BOOST_LOG_TRIVIAL(debug) << "LanX::unpack(): " << PRINT_HEX(data);
-
     if (!check_checksum(data)) {
         BOOST_LOG_TRIVIAL(error) << "Bad LAN_X checksum";
         return;
     }
 
-    uint8_t x_header = data[0];
     m_command = nullptr;
-
-    switch(x_header)
+    switch(data[0])
     {
         case 0x43:
             m_command = command_handlers[LanXCommands::LAN_X_TURNOUT_INFO];
@@ -142,36 +127,28 @@ void LanX::unpack(std::vector<uint8_t>& data)
             break;
         case 0x61:
         {
-            uint8_t db0 = data[1];
-            switch(db0)
+            switch(data[1])
             {
                 case 0x00:
                     m_command = command_handlers[LanXCommands::LAN_X_BC_TRACK_POWER_OFF];
-                    BOOST_LOG_TRIVIAL(debug) << "!! LAN_X_BC_TRACK_POWER_OFF";
                     break;
                 case 0x01:
                     m_command = command_handlers[LanXCommands::LAN_X_BC_TRACK_POWER_ON];
-                    BOOST_LOG_TRIVIAL(debug) << "!! LAN_X_BC_TRACK_POWER_ON";
                     break;
                 case 0x02:
                     m_command = command_handlers[LanXCommands::LAN_X_BC_PROGRAMMING_MODE];
-                    BOOST_LOG_TRIVIAL(debug) << "!! LAN_X_BC_PROGRAMMING_MODE";
                     break;
                 case 0x08:
                     m_command = command_handlers[LanXCommands::LAN_X_BC_TRACK_SHORT_CIRCUIT];
-                    BOOST_LOG_TRIVIAL(debug) << "!! LAN_X_BC_TRACK_SHORT_CIRCUIT";
                     break;
                 case 0x12:
                     m_command = command_handlers[LanXCommands::LAN_X_CV_NACK_SC];
-                    BOOST_LOG_TRIVIAL(debug) << "!! LAN_X_CV_NACK_SC";
                     break;
                 case 0x13:
                     m_command = command_handlers[LanXCommands::LAN_X_CV_NACK];
-                    BOOST_LOG_TRIVIAL(debug) << "!! LAN_X_CV_NACK";
                     break;
                 case 0x82:
                     m_command = command_handlers[LanXCommands::LAN_X_UNKNOWN_COMMAND];
-                    BOOST_LOG_TRIVIAL(debug) << "!! LAN_X_UNKNOWN_COMMAND";
                     break;
             }
         }
@@ -229,14 +206,13 @@ std::vector<uint8_t> LanSetBroadcastFlags::pack_data()
     result.insert(result.end(), (m_flags >> 8) & 0xff);
     result.insert(result.end(), (m_flags >> 16) & 0xff);
     result.insert(result.end(), (m_flags >> 24) & 0xff);
-    BOOST_LOG_TRIVIAL(debug) << "LanSetBroadcastFlags::pack_data(): " << PRINT_HEX(result);
     return result;
 }
 
 // LAN_GET_BROADCASTFLAGS (0x51)
 void LanGetBroadcastFlags::unpack(std::vector<uint8_t> &data)
 {
-    BOOST_LOG_TRIVIAL(debug) << "LanGetBroadcastFlags::unpack(): " << PRINT_HEX(data);
+    flags = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24);
 }
 
 // LAN_GET_LOCOMODE (0x60)
@@ -263,7 +239,6 @@ std::vector<uint8_t> LanSetLocomode::pack_data()
     result.insert(result.end(), (m_address >> 8) & 0xff);
     result.insert(result.end(), m_address & 0xff);
     result.insert(result.end(), static_cast<uint8_t>(m_mode));
-    BOOST_LOG_TRIVIAL(debug) << "LanSetLocomode::pack_data(): " << PRINT_HEX(result);
     return result;
 }
 
